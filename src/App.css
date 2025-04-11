@@ -61,6 +61,15 @@
   100% { transform: translateY(0px); }
 }
 
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
 .animate-fade-in {
   animation: fadeIn 0.8s ease-out forwards;
 }
@@ -109,9 +118,17 @@
   transition: all 0.3s ease;
 }
 
+.dark .gradient-card {
+  background: linear-gradient(135deg, #1a2340, #0d1526);
+}
+
 .gradient-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.dark .gradient-card:hover {
+  box-shadow: 0 10px 20px rgba(0, 0, 100, 0.2);
 }
 
 @keyframes gradient {
@@ -126,9 +143,18 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+.dark .glass-effect {
+  background: rgba(20, 30, 60, 0.2);
+  border: 1px solid rgba(50, 100, 255, 0.1);
+}
+
 .neon-text {
   color: #fff;
   text-shadow: 0 0 5px #4285F4, 0 0 10px #4285F4, 0 0 15px #4285F4;
+}
+
+.dark .neon-text {
+  text-shadow: 0 0 5px #4285F4, 0 0 10px #4285F4, 0 0 20px #4285F4;
 }
 
 /* Melhorias de responsividade */
@@ -181,5 +207,16 @@
   .TabsTrigger {
     font-size: 0.7rem;
     padding: 0.4rem;
+  }
+  
+  /* Fix for very small screens */
+  .tabs-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Make form elements more touch-friendly */
+  input, select, button {
+    min-height: 44px;
   }
 }
