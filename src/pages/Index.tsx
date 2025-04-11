@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
-import { Copy, Sparkles, MessageSquare, Tag, Calendar, Info, Clock, MapPin, Globe, Phone } from "lucide-react";
+import { Copy, Sparkles, MessageSquare, Tag, Calendar, Info, Clock, MapPin, Globe, Phone, ImageIcon } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { Image } from "@/components/ui/image";
 
 const Index = () => {
   const { toast } = useToast();
@@ -335,7 +336,7 @@ const Index = () => {
                 </div>
                 <div className="border border-blue-200 p-4 rounded-md bg-white shadow hover:shadow-md transition-all hover:-translate-y-1">
                   <h3 className="font-semibold mb-2 text-blue-700 flex items-center gap-2">
-                    <Image size={16} /> Adicione Conteúdo Visual
+                    <ImageIcon size={16} /> Adicione Conteúdo Visual
                   </h3>
                   <p className="text-sm text-blue-600">
                     Carregue fotos ou vídeos profissionais que mostrem produtos, serviços ou o ambiente da empresa.
