@@ -80,41 +80,41 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white">
-      <div className="container py-6 md:py-10">
+      <div className="container px-4 py-6 md:py-10">
         <div className="flex flex-col items-center justify-center space-y-6 md:space-y-8 text-center">
-          <div className="animate-fade-in">
-            <h1 className="text-3xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
+          <div className="animate-fade-in w-full">
+            <h1 className="text-2xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent">
               GMB Post Generator
             </h1>
-            <p className="text-md md:text-lg text-blue-700 mt-2 animate-fade-in delay-200">
+            <p className="text-sm md:text-lg text-blue-700 mt-2 animate-fade-in delay-200 px-2">
               Gere posts personalizados para o Google Meu Negócio em segundos
             </p>
           </div>
 
           <Card className="w-full max-w-4xl gradient-card animate-fade-in delay-300 shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-t-lg">
-              <CardTitle>Configurações do Post</CardTitle>
-              <CardDescription className="text-blue-100">
+            <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-t-lg p-4 md:p-6">
+              <CardTitle className="text-xl md:text-2xl">Configurações do Post</CardTitle>
+              <CardDescription className="text-blue-100 text-sm md:text-base">
                 Preencha as informações abaixo para gerar posts personalizados
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-4 md:p-6">
+            <CardContent className="p-3 md:p-6">
               <Tabs defaultValue="post-type" className="w-full">
-                <TabsList className={`grid ${isMobile ? 'grid-cols-1 gap-2' : 'grid-cols-3'} mb-8`}>
-                  <TabsTrigger value="post-type" className="flex items-center gap-2">
-                    <MessageSquare size={16} /> Tipo de Post
+                <TabsList className={`grid ${isMobile ? 'grid-cols-1' : 'grid-cols-3'} gap-2 mb-6 md:mb-8 w-full`}>
+                  <TabsTrigger value="post-type" className="flex items-center justify-center gap-1 text-xs md:text-sm py-2">
+                    <MessageSquare size={isMobile ? 14 : 16} /> <span>Tipo de Post</span>
                   </TabsTrigger>
-                  <TabsTrigger value="business-info" className="flex items-center gap-2">
-                    <Info size={16} /> Informações do Negócio
+                  <TabsTrigger value="business-info" className="flex items-center justify-center gap-1 text-xs md:text-sm py-2">
+                    <Info size={isMobile ? 14 : 16} /> <span>Informações</span>
                   </TabsTrigger>
-                  <TabsTrigger value="tone-format" className="flex items-center gap-2">
-                    <Sparkles size={16} /> Tom e Formato
+                  <TabsTrigger value="tone-format" className="flex items-center justify-center gap-1 text-xs md:text-sm py-2">
+                    <Sparkles size={isMobile ? 14 : 16} /> <span>Tom e Formato</span>
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="post-type" className="space-y-4 animate-fade-in">
                   <div className="space-y-2">
-                    <Label htmlFor="post-type" className="text-blue-700 font-medium">Selecione o tipo de post</Label>
+                    <Label htmlFor="post-type" className="text-blue-700 font-medium text-sm md:text-base">Selecione o tipo de post</Label>
                     <Select 
                       value={postType} 
                       onValueChange={(value) => handleSelectChange("postType", value)}
@@ -134,7 +134,7 @@ const Index = () => {
                         </SelectItem>
                       </SelectContent>
                     </Select>
-                    <p className="text-sm text-blue-600 mt-1 bg-blue-50 p-2 rounded-md">
+                    <p className="text-xs md:text-sm text-blue-600 mt-1 bg-blue-50 p-2 rounded-md">
                       {postType === "update" && "Informações gerais sobre o negócio, como novidades, serviços ou produtos."}
                       {postType === "offer" && "Anunciar descontos, promoções ou vendas especiais."}
                       {postType === "event" && "Promover eventos específicos, como workshops, feiras ou celebrações."}
@@ -143,10 +143,10 @@ const Index = () => {
                 </TabsContent>
 
                 <TabsContent value="business-info" className="space-y-4 animate-fade-in">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="name" className="text-blue-700 font-medium flex items-center gap-1">
-                        <Info size={16} /> Nome da Empresa
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
+                    <div className="space-y-1 md:space-y-2">
+                      <Label htmlFor="name" className="text-blue-700 font-medium flex items-center gap-1 text-sm">
+                        <Info size={14} /> Nome da Empresa
                       </Label>
                       <Input
                         id="name"
@@ -154,12 +154,12 @@ const Index = () => {
                         placeholder="Ex: Mercadinho Bela Vista"
                         value={businessInfo.name}
                         onChange={handleInputChange}
-                        className="border-blue-200 focus:ring-blue-500"
+                        className="border-blue-200 focus:ring-blue-500 text-sm"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="category" className="text-blue-700 font-medium flex items-center gap-1">
-                        <Tag size={16} /> Categoria do Negócio
+                    <div className="space-y-1 md:space-y-2">
+                      <Label htmlFor="category" className="text-blue-700 font-medium flex items-center gap-1 text-sm">
+                        <Tag size={14} /> Categoria do Negócio
                       </Label>
                       <Input
                         id="category"
@@ -167,12 +167,12 @@ const Index = () => {
                         placeholder="Ex: Supermercado, Restaurante, etc."
                         value={businessInfo.category}
                         onChange={handleInputChange}
-                        className="border-blue-200 focus:ring-blue-500"
+                        className="border-blue-200 focus:ring-blue-500 text-sm"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="website" className="text-blue-700 font-medium flex items-center gap-1">
-                        <Globe size={16} /> Website (opcional)
+                    <div className="space-y-1 md:space-y-2">
+                      <Label htmlFor="website" className="text-blue-700 font-medium flex items-center gap-1 text-sm">
+                        <Globe size={14} /> Website (opcional)
                       </Label>
                       <Input
                         id="website"
@@ -180,12 +180,12 @@ const Index = () => {
                         placeholder="Ex: www.mercadinhobelavista.com"
                         value={businessInfo.website}
                         onChange={handleInputChange}
-                        className="border-blue-200 focus:ring-blue-500"
+                        className="border-blue-200 focus:ring-blue-500 text-sm"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone" className="text-blue-700 font-medium flex items-center gap-1">
-                        <Phone size={16} /> Telefone (opcional)
+                    <div className="space-y-1 md:space-y-2">
+                      <Label htmlFor="phone" className="text-blue-700 font-medium flex items-center gap-1 text-sm">
+                        <Phone size={14} /> Telefone (opcional)
                       </Label>
                       <Input
                         id="phone"
@@ -193,12 +193,12 @@ const Index = () => {
                         placeholder="Ex: (82) 99999-9999"
                         value={businessInfo.phone}
                         onChange={handleInputChange}
-                        className="border-blue-200 focus:ring-blue-500"
+                        className="border-blue-200 focus:ring-blue-500 text-sm"
                       />
                     </div>
-                    <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="address" className="text-blue-700 font-medium flex items-center gap-1">
-                        <MapPin size={16} /> Endereço Completo
+                    <div className="space-y-1 md:space-y-2 md:col-span-2">
+                      <Label htmlFor="address" className="text-blue-700 font-medium flex items-center gap-1 text-sm">
+                        <MapPin size={14} /> Endereço Completo
                       </Label>
                       <Input
                         id="address"
@@ -206,12 +206,12 @@ const Index = () => {
                         placeholder="Ex: Av. Eng. Corintho Campelo da Paz, N° 29 - Santos Dumont, Maceió"
                         value={businessInfo.address}
                         onChange={handleInputChange}
-                        className="border-blue-200 focus:ring-blue-500"
+                        className="border-blue-200 focus:ring-blue-500 text-sm"
                       />
                     </div>
-                    <div className="space-y-2 md:col-span-2">
-                      <Label htmlFor="hours" className="text-blue-700 font-medium flex items-center gap-1">
-                        <Clock size={16} /> Horário de Funcionamento
+                    <div className="space-y-1 md:space-y-2 md:col-span-2">
+                      <Label htmlFor="hours" className="text-blue-700 font-medium flex items-center gap-1 text-sm">
+                        <Clock size={14} /> Horário de Funcionamento
                       </Label>
                       <Input
                         id="hours"
@@ -219,7 +219,7 @@ const Index = () => {
                         placeholder="Ex: Segunda a Sábado: 8h às 22h | Domingo: Fechado"
                         value={businessInfo.hours}
                         onChange={handleInputChange}
-                        className="border-blue-200 focus:ring-blue-500"
+                        className="border-blue-200 focus:ring-blue-500 text-sm"
                       />
                     </div>
                   </div>
@@ -227,7 +227,7 @@ const Index = () => {
 
                 <TabsContent value="tone-format" className="space-y-4 animate-fade-in">
                   <div className="space-y-2">
-                    <Label htmlFor="tone" className="text-blue-700 font-medium">Tom do Post</Label>
+                    <Label htmlFor="tone" className="text-blue-700 font-medium text-sm md:text-base">Tom do Post</Label>
                     <Select 
                       value={tone} 
                       onValueChange={(value) => handleSelectChange("tone", value)}
@@ -246,7 +246,7 @@ const Index = () => {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="language" className="text-blue-700 font-medium">Idioma</Label>
+                    <Label htmlFor="language" className="text-blue-700 font-medium text-sm md:text-base">Idioma</Label>
                     <Select 
                       value={language} 
                       onValueChange={(value) => handleSelectChange("language", value)}
@@ -264,7 +264,7 @@ const Index = () => {
                 </TabsContent>
               </Tabs>
 
-              <div className="mt-8">
+              <div className="mt-6 md:mt-8">
                 <Button 
                   onClick={handleGeneratePosts} 
                   disabled={loading || !businessInfo.name || !businessInfo.category || !businessInfo.address}
@@ -278,29 +278,29 @@ const Index = () => {
 
           {generatedPosts.length > 0 && (
             <Card className="w-full max-w-4xl animate-fade-in delay-400 shadow-lg border-blue-200">
-              <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-t-lg">
-                <CardTitle>Sugestões de Posts</CardTitle>
-                <CardDescription className="text-blue-100">
+              <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-t-lg p-4 md:p-6">
+                <CardTitle className="text-xl md:text-2xl">Sugestões de Posts</CardTitle>
+                <CardDescription className="text-blue-100 text-sm md:text-base">
                   Escolha uma das opções abaixo ou use como inspiração para criar seu próprio post
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6 p-4 md:p-6">
+              <CardContent className="space-y-4 md:space-y-6 p-3 md:p-6">
                 {generatedPosts.map((post, index) => (
-                  <div key={index} className="border border-blue-200 p-4 rounded-md bg-white shadow-md hover:shadow-lg transition-all animate-fade-in" style={{animationDelay: `${0.5 + index * 0.2}s`}}>
+                  <div key={index} className="border border-blue-200 p-3 md:p-4 rounded-md bg-white shadow-md hover:shadow-lg transition-all animate-fade-in" style={{animationDelay: `${0.5 + index * 0.2}s`}}>
                     <div className="flex justify-between items-center mb-2">
-                      <h3 className="font-semibold text-blue-700 flex items-center gap-2">
-                        <Sparkles size={16} /> Sugestão {index + 1}
+                      <h3 className="font-semibold text-blue-700 flex items-center gap-1 text-sm md:text-base">
+                        <Sparkles size={14} /> Sugestão {index + 1}
                       </h3>
                       <Button 
                         variant="outline" 
                         size="sm" 
                         onClick={() => copyToClipboard(post)}
-                        className="hover:bg-blue-100 border-blue-200 text-blue-700 flex items-center gap-1"
+                        className="hover:bg-blue-100 border-blue-200 text-blue-700 flex items-center gap-1 text-xs md:text-sm h-8 px-2 md:px-3"
                       >
                         <Copy size={14} /> Copiar
                       </Button>
                     </div>
-                    <div className="whitespace-pre-wrap bg-blue-50 p-4 rounded text-left border-l-4 border-blue-500 text-blue-800">
+                    <div className="whitespace-pre-wrap bg-blue-50 p-3 md:p-4 rounded text-left border-l-4 border-blue-500 text-blue-800 text-xs md:text-sm overflow-x-auto">
                       {post}
                     </div>
                   </div>
@@ -310,43 +310,43 @@ const Index = () => {
           )}
 
           <Card className="w-full max-w-4xl animate-fade-in delay-500 gradient-card shadow-lg">
-            <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-t-lg">
-              <CardTitle>Dicas e Recomendações</CardTitle>
-              <CardDescription className="text-blue-100">
+            <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-t-lg p-4 md:p-6">
+              <CardTitle className="text-xl md:text-2xl">Dicas e Recomendações</CardTitle>
+              <CardDescription className="text-blue-100 text-sm md:text-base">
                 Siga estas orientações para maximizar o impacto dos seus posts no Google Meu Negócio
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-4 md:p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="border border-blue-200 p-4 rounded-md bg-white shadow hover:shadow-md transition-all hover:-translate-y-1">
-                  <h3 className="font-semibold mb-2 text-blue-700 flex items-center gap-2">
-                    <MapPin size={16} /> Use Palavras-Chave Locais
+            <CardContent className="p-3 md:p-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
+                <div className="border border-blue-200 p-3 md:p-4 rounded-md bg-white shadow hover:shadow-md transition-all hover:-translate-y-1">
+                  <h3 className="font-semibold mb-1 md:mb-2 text-blue-700 flex items-center gap-1 text-sm">
+                    <MapPin size={14} /> Use Palavras-Chave Locais
                   </h3>
-                  <p className="text-sm text-blue-600">
+                  <p className="text-xs md:text-sm text-blue-600">
                     Inclua nomes de bairros, cidades ou regiões próximas para aumentar a visibilidade local.
                   </p>
                 </div>
-                <div className="border border-blue-200 p-4 rounded-md bg-white shadow hover:shadow-md transition-all hover:-translate-y-1">
-                  <h3 className="font-semibold mb-2 text-blue-700 flex items-center gap-2">
-                    <MessageSquare size={16} /> Incentive Interações
+                <div className="border border-blue-200 p-3 md:p-4 rounded-md bg-white shadow hover:shadow-md transition-all hover:-translate-y-1">
+                  <h3 className="font-semibold mb-1 md:mb-2 text-blue-700 flex items-center gap-1 text-sm">
+                    <MessageSquare size={14} /> Incentive Interações
                   </h3>
-                  <p className="text-sm text-blue-600">
+                  <p className="text-xs md:text-sm text-blue-600">
                     Use chamadas para ação (CTAs) claras, como "Venha visitar!", "Reserve agora!" ou "Entre em contato".
                   </p>
                 </div>
-                <div className="border border-blue-200 p-4 rounded-md bg-white shadow hover:shadow-md transition-all hover:-translate-y-1">
-                  <h3 className="font-semibold mb-2 text-blue-700 flex items-center gap-2">
-                    <ImageIcon size={16} /> Adicione Conteúdo Visual
+                <div className="border border-blue-200 p-3 md:p-4 rounded-md bg-white shadow hover:shadow-md transition-all hover:-translate-y-1">
+                  <h3 className="font-semibold mb-1 md:mb-2 text-blue-700 flex items-center gap-1 text-sm">
+                    <ImageIcon size={14} /> Adicione Conteúdo Visual
                   </h3>
-                  <p className="text-sm text-blue-600">
+                  <p className="text-xs md:text-sm text-blue-600">
                     Carregue fotos ou vídeos profissionais que mostrem produtos, serviços ou o ambiente da empresa.
                   </p>
                 </div>
-                <div className="border border-blue-200 p-4 rounded-md bg-white shadow hover:shadow-md transition-all hover:-translate-y-1">
-                  <h3 className="font-semibold mb-2 text-blue-700 flex items-center gap-2">
-                    <MessageSquare size={16} /> Monitore e Responda
+                <div className="border border-blue-200 p-3 md:p-4 rounded-md bg-white shadow hover:shadow-md transition-all hover:-translate-y-1">
+                  <h3 className="font-semibold mb-1 md:mb-2 text-blue-700 flex items-center gap-1 text-sm">
+                    <MessageSquare size={14} /> Monitore e Responda
                   </h3>
-                  <p className="text-sm text-blue-600">
+                  <p className="text-xs md:text-sm text-blue-600">
                     Após publicar o post, monitore comentários e responda rapidamente para engajar os clientes.
                   </p>
                 </div>
