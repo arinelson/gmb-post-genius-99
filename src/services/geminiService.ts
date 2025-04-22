@@ -116,133 +116,452 @@ export const generatePostsWithGemini = async (
   }
 };
 
-// Construtor de prompt para descrição do GMB
+// Construtor de prompt para descrição do GMB - MELHORADO
 function buildDescriptionPrompt(businessInfo: BusinessInfo, language: string): string {
-  let audience = "";
-  let seoFocus = "";
-  let lengthLimit = "";
+  let seoGuidance = "";
+  let categorySpecific = "";
   
-  // Adicionar variantes de idioma
+  // Instruções específicas de SEO baseadas no idioma
   if (language === "pt-BR") {
-    audience = "clientes locais brasileiros";
-    seoFocus = "foco em SEO local brasileiro";
-    lengthLimit = "limite de 750 caracteres";
+    seoGuidance = `
+1. Use palavras-chave relevantes relacionadas a "${businessInfo.category}" naturalmente
+2. Destaque a localização: "${businessInfo.address}"
+3. Inclua uma chamada para ação clara
+4. Evite jargões e linguagem técnica excessiva
+5. Destaque benefícios, não apenas características`;
+    
   } else if (language === "en-US") {
-    audience = "local US customers";
-    seoFocus = "focus on US local SEO";
-    lengthLimit = "limit of 750 characters";
+    seoGuidance = `
+1. Naturally incorporate keywords related to "${businessInfo.category}"
+2. Highlight the location: "${businessInfo.address}"
+3. Include a clear call to action
+4. Avoid jargon and excessive technical language
+5. Emphasize benefits, not just features`;
+    
   } else if (language === "es-ES") {
-    audience = "clientes locales de habla hispana";
-    seoFocus = "enfoque en SEO local español";
-    lengthLimit = "límite de 750 caracteres";
+    seoGuidance = `
+1. Incorpore naturalmente palabras clave relacionadas con "${businessInfo.category}"
+2. Destaque la ubicación: "${businessInfo.address}"
+3. Incluya un llamado a la acción claro
+4. Evite jerga y lenguaje técnico excesivo
+5. Enfatice beneficios, no solo características`;
   }
   
-  return `Crie uma descrição otimizada para o Google Meu Negócio para a seguinte empresa:
+  // Adicionar instruções específicas por categoria
+  const lowercaseCategory = businessInfo.category.toLowerCase();
+  
+  if (lowercaseCategory.includes("restaurante") || lowercaseCategory.includes("restaurant") || lowercaseCategory.includes("café")) {
+    categorySpecific = language === "pt-BR" 
+      ? "Mencione a atmosfera, especialidades culinárias, experiência de jantar única" 
+      : language === "en-US"
+      ? "Mention atmosphere, culinary specialties, unique dining experience"
+      : "Mencione la atmósfera, especialidades culinarias, experiencia gastronómica única";
+  } 
+  else if (lowercaseCategory.includes("loja") || lowercaseCategory.includes("store") || lowercaseCategory.includes("tienda") || lowercaseCategory.includes("varejo") || lowercaseCategory.includes("retail")) {
+    categorySpecific = language === "pt-BR" 
+      ? "Destaque produtos exclusivos, qualidade, atendimento personalizado, facilidades de compra" 
+      : language === "en-US"
+      ? "Highlight exclusive products, quality, personalized service, shopping amenities"
+      : "Destaque productos exclusivos, calidad, servicio personalizado, facilidades de compra";
+  }
+  else if (lowercaseCategory.includes("hotel") || lowercaseCategory.includes("pousada") || lowercaseCategory.includes("hospedagem") || lowercaseCategory.includes("lodging")) {
+    categorySpecific = language === "pt-BR" 
+      ? "Enfatize conforto, localização estratégica, comodidades, proximidade a atrações" 
+      : language === "en-US"
+      ? "Emphasize comfort, strategic location, amenities, proximity to attractions"
+      : "Enfatice comodidad, ubicación estratégica, instalaciones, proximidad a atracciones";
+  }
+  else if (lowercaseCategory.includes("saúde") || lowercaseCategory.includes("health") || lowercaseCategory.includes("salud") || lowercaseCategory.includes("médic") || lowercaseCategory.includes("medic") || lowercaseCategory.includes("clínic") || lowercaseCategory.includes("clinic")) {
+    categorySpecific = language === "pt-BR" 
+      ? "Ressalte profissionalismo, cuidado personalizado, instalações modernas, certificações" 
+      : language === "en-US"
+      ? "Highlight professionalism, personalized care, modern facilities, certifications"
+      : "Resalte profesionalismo, atención personalizada, instalaciones modernas, certificaciones";
+  }
+  else if (lowercaseCategory.includes("serviço") || lowercaseCategory.includes("service") || lowercaseCategory.includes("servicio")) {
+    categorySpecific = language === "pt-BR" 
+      ? "Destaque expertise, soluções eficientes, atendimento rápido, garantias oferecidas" 
+      : language === "en-US"
+      ? "Highlight expertise, efficient solutions, prompt service, guarantees offered"
+      : "Destaque experiencia, soluciones eficientes, servicio rápido, garantías ofrecidas";
+  }
+  
+  // Formato base do prompt
+  const basePrompt = language === "pt-BR" 
+    ? `Crie uma descrição otimizada para SEO do Google Meu Negócio para ${businessInfo.name}, um(a) ${businessInfo.category}.
 
-INFORMAÇÕES DA EMPRESA:
-- Nome: ${businessInfo.name}
-- Categoria: ${businessInfo.category}
-- Endereço: ${businessInfo.address}
-- Site: ${businessInfo.website || "-"}
-- Telefone: ${businessInfo.phone || "-"}
-- Horário: ${businessInfo.hours || "-"}
+OBJETIVO: Gerar uma descrição atemporal que maximize o ranqueamento do GMB e atraia potenciais clientes.
 
-REQUISITOS DA DESCRIÇÃO:
-1. Atenda ${audience}
-2. Com ${seoFocus}
-3. Tenha exatamente um ${lengthLimit}
-4. Seja concisa e clara, usando tom profissional e amigável
-5. Inclua os diferenciais do negócio com base na categoria
-6. Destaque a localização e acessibilidade
-7. Tenha chamada para ação no final
+REQUISITOS DE SEO:${seoGuidance}
+${categorySpecific ? `\nESPECÍFICO PARA ESTE TIPO DE NEGÓCIO:\n${categorySpecific}` : ""}
 
-FORMATO: Texto contínuo sem marcadores, quebras de linha ou títulos. Não use aspas. Não ultrapasse 750 caracteres.
+IMPORTANTE:
+- Limite exato de 750 caracteres
+- Texto conciso e persuasivo
+- Sem quebras de linha ou marcadores
+- Ênfase no valor único do negócio
+- Tom profissional e acolhedor
+- Linguagem clara e objetiva
+- Sem datas específicas (para ser atemporal)
+- Evite afirmações exageradas ou falsas
 
-IMPORTANTE: A descrição deve estar perfeitamente alinhada com as diretrizes do Google Meu Negócio, enfatizar credibilidade e qualidade, e usar palavras-chave naturalmente.`;
+FORMATO: Um parágrafo único, sem títulos, todo em texto corrido, limitado a 750 caracteres.`
+    
+    : language === "en-US" 
+    ? `Create an SEO-optimized Google My Business description for ${businessInfo.name}, a ${businessInfo.category}.
+
+OBJECTIVE: Generate a timeless description that maximizes GMB ranking and attracts potential customers.
+
+SEO REQUIREMENTS:${seoGuidance}
+${categorySpecific ? `\nSPECIFIC TO THIS TYPE OF BUSINESS:\n${categorySpecific}` : ""}
+
+IMPORTANT:
+- Exact limit of 750 characters
+- Concise and persuasive text
+- No line breaks or bullet points
+- Emphasis on the unique value of the business
+- Professional and welcoming tone
+- Clear and objective language
+- No specific dates (to be timeless)
+- Avoid exaggerated or false claims
+
+FORMAT: A single paragraph, without titles, all in flowing text, limited to 750 characters.`
+    
+    : `Cree una descripción optimizada para SEO de Google Mi Negocio para ${businessInfo.name}, un(a) ${businessInfo.category}.
+
+OBJETIVO: Generar una descripción atemporal que maximice el ranking en GMB y atraiga a clientes potenciales.
+
+REQUISITOS DE SEO:${seoGuidance}
+${categorySpecific ? `\nESPECÍFICO PARA ESTE TIPO DE NEGOCIO:\n${categorySpecific}` : ""}
+
+IMPORTANTE:
+- Límite exacto de 750 caracteres
+- Texto conciso y persuasivo
+- Sin saltos de línea ni viñetas
+- Énfasis en el valor único del negocio
+- Tono profesional y acogedor
+- Lenguaje claro y objetivo
+- Sin fechas específicas (para ser atemporal)
+- Evite afirmaciones exageradas o falsas
+
+FORMATO: Un único párrafo, sin títulos, todo en texto corrido, limitado a 750 caracteres.`;
+
+  return basePrompt;
 }
 
-// Construtor de prompt para resposta de avaliações
+// Construtor de prompt para resposta de avaliações - MELHORADO
 function buildReviewReplyPrompt(businessInfo: BusinessInfo, reviewText: string, language: string): string {
-  let toneGuidance = "";
-  let lengthGuidance = "";
-  
-  // Adicionar variantes de idioma
-  if (language === "pt-BR") {
-    toneGuidance = "tom profissional e cordial brasileiro";
-    lengthGuidance = "máximo de 300 caracteres";
-  } else if (language === "en-US") {
-    toneGuidance = "professional and cordial American tone";
-    lengthGuidance = "maximum of 300 characters";
-  } else if (language === "es-ES") {
-    toneGuidance = "tono profesional y cordial en español";
-    lengthGuidance = "máximo de 300 caracteres";
-  }
-  
-  return `Gere uma resposta otimizada para a seguinte avaliação do Google Meu Negócio:
+  // Primeiro passo: análise de sentimento da avaliação
+  const sentimentAnalysisPrompt = language === "pt-BR" 
+    ? `ETAPA 1: ANÁLISE DE SENTIMENTO
+Analise a seguinte avaliação de cliente e classifique como:
+- POSITIVA (elogio, satisfação)
+- NEGATIVA (reclamação, insatisfação)
+- NEUTRA (comentário sem opinião clara)
+- PERGUNTA (dúvida, solicitação de informação)
 
-AVALIAÇÃO DO CLIENTE:
-"${reviewText}"
+Avaliação do cliente: "${reviewText}"
+`
+    : language === "en-US"
+    ? `STEP 1: SENTIMENT ANALYSIS
+Analyze the following customer review and classify it as:
+- POSITIVE (praise, satisfaction)
+- NEGATIVE (complaint, dissatisfaction)
+- NEUTRAL (comment without clear opinion)
+- QUESTION (doubt, request for information)
 
-INFORMAÇÕES DA EMPRESA:
-- Nome: ${businessInfo.name}
-- Categoria: ${businessInfo.category}
-- Endereço: ${businessInfo.address}
+Customer review: "${reviewText}"
+`
+    : `PASO 1: ANÁLISIS DE SENTIMIENTO
+Analice la siguiente reseña del cliente y clasifíquela como:
+- POSITIVA (elogio, satisfacción)
+- NEGATIVA (queja, insatisfacción)
+- NEUTRA (comentario sin opinión clara)
+- PREGUNTA (duda, solicitud de información)
 
-DIRETRIZES PARA RESPOSTA:
-1. Use ${toneGuidance}
-2. Respeite ${lengthGuidance}
-3. Personalize com nome da empresa
-4. Se avaliação positiva (4-5 estrelas): agradeça sinceramente, mencione algo específico do comentário, convide para retornar
-5. Se avaliação negativa (1-3 estrelas): demonstre empatia, peça desculpas objetivamente sem admitir culpa, ofereça resolver offline, forneça contato direto
-6. Se avaliação neutra ou ambígua: agradeça, aborde pontos específicos, convide para contato direto
-7. Evite respostas genéricas, templificadas ou artificiais
+Reseña del cliente: "${reviewText}"
+`;
 
-FORMATO: Texto contínuo sem marcadores ou quebras excessivas. Não use aspas.`;
+  // Segundo passo: criar resposta personalizada baseada no sentimento
+  const responseGenerationPrompt = language === "pt-BR"
+    ? `ETAPA 2: GERAÇÃO DE RESPOSTA
+Agora, crie uma resposta profissional e personalizada para a avaliação com base na sua classificação:
+
+Se POSITIVA:
+- Agradeça sinceramente pelo feedback positivo
+- Mencione algo específico do comentário
+- Convide o cliente a retornar
+- Assinatura com nome da empresa
+
+Se NEGATIVA:
+- Demonstre empatia e compreensão (sem pedir desculpas excessivamente)
+- Não admita culpa diretamente, mas mostre preocupação
+- Ofereça contato direto (sem expor informações privadas)
+- Convide para resolver a situação offline
+- Termine com tom positivo
+- Assinatura profissional
+
+Se NEUTRA:
+- Agradeça pelo feedback
+- Destaque pontos positivos do seu negócio
+- Convide para uma nova visita
+- Assinatura cordial
+
+Se PERGUNTA:
+- Responda diretamente à dúvida de forma informativa
+- Ofereça informações adicionais relevantes
+- Convide para contato para mais detalhes
+- Assinatura prestativa
+
+REQUISITOS GERAIS:
+- Tom profissional e cordial
+- Máximo de 240 caracteres
+- Sem incluir datas específicas
+- Sem jargões ou linguagem técnica
+- Evitar fórmulas genéricas
+- Personalizar com nome do cliente (se apresentado na avaliação)
+- Incluir nome da empresa (${businessInfo.name})
+
+FORMATO: Texto corrido, sem marcadores ou títulos.`
+
+    : language === "en-US"
+    ? `STEP 2: RESPONSE GENERATION
+Now, create a professional and personalized response to the review based on your classification:
+
+If POSITIVE:
+- Sincerely thank for the positive feedback
+- Mention something specific from the comment
+- Invite the customer to return
+- Signature with company name
+
+If NEGATIVE:
+- Show empathy and understanding (without apologizing excessively)
+- Don't directly admit fault, but show concern
+- Offer direct contact (without exposing private information)
+- Invite to resolve the situation offline
+- End with a positive tone
+- Professional signature
+
+If NEUTRAL:
+- Thank for the feedback
+- Highlight positive points of your business
+- Invite for a new visit
+- Cordial signature
+
+If QUESTION:
+- Answer the doubt directly in an informative way
+- Offer relevant additional information
+- Invite for contact for more details
+- Helpful signature
+
+GENERAL REQUIREMENTS:
+- Professional and cordial tone
+- Maximum of 240 characters
+- Without including specific dates
+- Without jargon or technical language
+- Avoid generic formulas
+- Personalize with customer name (if presented in the review)
+- Include company name (${businessInfo.name})
+
+FORMAT: Flowing text, without bullets or titles.`
+
+    : `PASO 2: GENERACIÓN DE RESPUESTA
+Ahora, cree una respuesta profesional y personalizada para la reseña según su clasificación:
+
+Si es POSITIVA:
+- Agradezca sinceramente por los comentarios positivos
+- Mencione algo específico del comentario
+- Invite al cliente a regresar
+- Firma con nombre de la empresa
+
+Si es NEGATIVA:
+- Muestre empatía y comprensión (sin disculparse excesivamente)
+- No admita directamente la culpa, pero muestre preocupación
+- Ofrezca contacto directo (sin exponer información privada)
+- Invite a resolver la situación offline
+- Termine con un tono positivo
+- Firma profesional
+
+Si es NEUTRA:
+- Agradezca por los comentarios
+- Destaque puntos positivos de su negocio
+- Invite a una nueva visita
+- Firma cordial
+
+Si es PREGUNTA:
+- Responda directamente a la duda de forma informativa
+- Ofrezca información adicional relevante
+- Invite a contactar para más detalles
+- Firma servicial
+
+REQUISITOS GENERALES:
+- Tono profesional y cordial
+- Máximo de 240 caracteres
+- Sin incluir fechas específicas
+- Sin jerga o lenguaje técnico
+- Evitar fórmulas genéricas
+- Personalizar con nombre del cliente (si se presenta en la reseña)
+- Incluir nombre de la empresa (${businessInfo.name})
+
+FORMATO: Texto corrido, sin viñetas ni títulos.`;
+
+  // Combinar os dois prompts para criar uma análise completa
+  return `${sentimentAnalysisPrompt}
+
+${responseGenerationPrompt}
+
+IMPORTANTE: SUA RESPOSTA FINAL DEVE CONTER APENAS O TEXTO DA RESPOSTA, SEM MARCAÇÕES DE ETAPAS, ANÁLISES OU QUALQUER OUTRO ELEMENTO AUXILIAR.`;
 }
 
-// Construtor de prompt para Q&A
+// Construtor de prompt para Q&A - MELHORADO
 function buildQAPrompt(businessInfo: BusinessInfo, language: string): string {
-  let qaTopic = "";
-  let qaFormat = "";
+  // Categorias específicas e perguntas comuns por segmento
+  let categorySpecificQuestions = "";
+  const lowercaseCategory = businessInfo.category.toLowerCase();
   
-  // Adicionar variantes de idioma e categorias específicas
+  // Definir perguntas específicas baseadas na categoria do negócio
   if (language === "pt-BR") {
-    qaTopic = "perguntas frequentes de clientes brasileiros";
-    qaFormat = "Formato: 'Pergunta: [pergunta]\\nResposta: [resposta concisa]'";
-
-    // Adicionar orientações específicas baseadas na categoria
-    if (businessInfo.category.toLowerCase().includes("restaurante")) {
-      qaTopic += " sobre reservas, horário de pico, estacionamento, menu, delivery, eventos privados";
-    } else if (businessInfo.category.toLowerCase().includes("supermercado")) {
-      qaTopic += " sobre horários estendidos, estacionamento, entregas, produtos orgânicos, seções especializadas";
-    } else if (businessInfo.category.toLowerCase().includes("hotel")) {
-      qaTopic += " sobre check-in/check-out, pets, wifi, café da manhã, estacionamento, transporte";
+    if (lowercaseCategory.includes("restaurante") || lowercaseCategory.includes("lanchonete") || lowercaseCategory.includes("café")) {
+      categorySpecificQuestions = `
+- Vocês aceitam reservas? Como faço para reservar?
+- Vocês têm opções vegetarianas/veganas/sem glúten?
+- Qual o horário de funcionamento nos fins de semana e feriados?
+- Vocês têm estacionamento próprio?
+- É permitido levar crianças? Têm cadeirinhas ou menu infantil?
+- Aceitam animais de estimação?
+- Posso fazer pedidos para viagem/delivery?
+- Vocês aceitam cartões de crédito/débito? Quais?
+- Cobram taxa de serviço/couvert?
+- O local é acessível para cadeirantes?`;
+    } 
+    else if (lowercaseCategory.includes("loja") || lowercaseCategory.includes("varejo") || lowercaseCategory.includes("mercado")) {
+      categorySpecificQuestions = `
+- Qual o horário de funcionamento?
+- Vocês têm estacionamento para clientes?
+- Aceitam cartões de crédito/débito? Parcelam compras?
+- Vocês têm serviço de entrega? Qual o custo?
+- Fazem trocas ou devoluções? Qual a política?
+- O local é acessível para cadeirantes?
+- Posso comprar pelo WhatsApp ou redes sociais?
+- Vocês têm programa de fidelidade?
+- Quais são os produtos/marcas mais populares que vocês vendem?
+- Trabalham com encomendas especiais?`;
     }
-  } else if (language === "en-US") {
-    qaTopic = "frequently asked questions from US customers";
-    qaFormat = "Format: 'Question: [question]\\nAnswer: [concise answer]'";
-    
-    if (businessInfo.category.toLowerCase().includes("restaurant")) {
-      qaTopic += " about reservations, busy hours, parking, menu, delivery, private events";
-    } else if (businessInfo.category.toLowerCase().includes("grocery")) {
-      qaTopic += " about extended hours, parking, deliveries, organic products, specialty sections";
-    } else if (businessInfo.category.toLowerCase().includes("hotel")) {
-      qaTopic += " about check-in/check-out, pets, wifi, breakfast, parking, transportation";
+    else if (lowercaseCategory.includes("hotel") || lowercaseCategory.includes("pousada") || lowercaseCategory.includes("hospedagem")) {
+      categorySpecificQuestions = `
+- Qual o horário de check-in e check-out?
+- Vocês aceitam animais de estimação?
+- O café da manhã está incluso na diária?
+- Vocês oferecem transfer do aeroporto/rodoviária?
+- Tem Wi-Fi gratuito nos quartos?
+- Qual a política de cancelamento?
+- Há estacionamento disponível? É gratuito?
+- Os quartos têm ar-condicionado?
+- Qual a distância até os principais pontos turísticos?
+- Vocês aceitam crianças? Há berços disponíveis?`;
     }
-  } else if (language === "es-ES") {
-    qaTopic = "preguntas frecuentes de clientes hispanos";
-    qaFormat = "Formato: 'Pregunta: [pregunta]\\nRespuesta: [respuesta concisa]'";
-    
-    if (businessInfo.category.toLowerCase().includes("restaurante")) {
-      qaTopic += " sobre reservas, horas pico, estacionamiento, menú, delivery, eventos privados";
-    } else if (businessInfo.category.toLowerCase().includes("supermercado")) {
-      qaTopic += " sobre horarios extendidos, estacionamiento, entregas, productos orgánicos, secciones especializadas";
-    } else if (businessInfo.category.toLowerCase().includes("hotel")) {
-      qaTopic += " sobre check-in/check-out, mascotas, wifi, desayuno, estacionamiento, transporte";
+    else if (lowercaseCategory.includes("saúde") || lowercaseCategory.includes("médic") || lowercaseCategory.includes("clínic")) {
+      categorySpecificQuestions = `
+- Vocês atendem planos de saúde? Quais?
+- Preciso marcar consulta com antecedência?
+- Como faço para agendar uma consulta?
+- Qual o tempo médio de espera para atendimento?
+- Vocês atendem urgências/emergências?
+- Quais especialidades médicas vocês oferecem?
+- Vocês realizam exames no local?
+- Qual o horário de funcionamento?
+- O local é acessível para cadeirantes?
+- Como posso obter resultados de exames online?`;
+    }
+    else if (lowercaseCategory.includes("beleza") || lowercaseCategory.includes("salão") || lowercaseCategory.includes("barbearia")) {
+      categorySpecificQuestions = `
+- Preciso agendar horário? Como faço?
+- Quais serviços vocês oferecem?
+- Qual o preço médio dos serviços?
+- Vocês trabalham com quais métodos de pagamento?
+- Posso parcelar o pagamento?
+- Vocês atendem aos domingos/feriados?
+- Quanto tempo dura cada procedimento em média?
+- Vocês aceitam cartões de crédito/débito?
+- Tem estacionamento próximo?
+- Fazem atendimento a domicílio?`;
+    }
+    else if (lowercaseCategory.includes("serviço") || lowercaseCategory.includes("consultor") || lowercaseCategory.includes("profissional")) {
+      categorySpecificQuestions = `
+- Como posso solicitar um orçamento?
+- Quais os prazos médios para entrega dos serviços?
+- Vocês atendem em domicílio/empresa?
+- Quais formas de pagamento aceitam?
+- Vocês emitem nota fiscal?
+- É necessário agendar horário para atendimento?
+- Vocês têm garantia para os serviços prestados?
+- Qual a área de atendimento?
+- Vocês trabalham aos fins de semana?
+- Qual a experiência/qualificação dos profissionais?`;
     }
   }
+  else if (language === "en-US") {
+    if (lowercaseCategory.includes("restaurant") || lowercaseCategory.includes("cafe")) {
+      categorySpecificQuestions = `
+- Do you accept reservations? How can I make one?
+- Do you have vegetarian/vegan/gluten-free options?
+- What are your opening hours on weekends and holidays?
+- Do you have your own parking?
+- Are children allowed? Do you have high chairs or kids' menu?
+- Are pets allowed?
+- Can I place orders for takeout/delivery?
+- Do you accept credit/debit cards? Which ones?
+- Is there a service charge/cover fee?
+- Is the location wheelchair accessible?`;
+    } 
+    else if (lowercaseCategory.includes("store") || lowercaseCategory.includes("retail") || lowercaseCategory.includes("market")) {
+      categorySpecificQuestions = `
+- What are your operating hours?
+- Do you have customer parking?
+- Do you accept credit/debit cards? Can purchases be paid in installments?
+- Do you have a delivery service? What's the cost?
+- Do you do exchanges or returns? What's the policy?
+- Is the location wheelchair accessible?
+- Can I buy through WhatsApp or social media?
+- Do you have a loyalty program?
+- What are the most popular products/brands you sell?
+- Do you work with special orders?`;
+    }
+    // Continuar com outras categorias em inglês...
+  }
+  else if (language === "es-ES") {
+    if (lowercaseCategory.includes("restaurante") || lowercaseCategory.includes("cafetería")) {
+      categorySpecificQuestions = `
+- ¿Aceptan reservas? ¿Cómo puedo hacer una?
+- ¿Tienen opciones vegetarianas/veganas/sin gluten?
+- ¿Cuál es el horario de atención los fines de semana y festivos?
+- ¿Tienen estacionamiento propio?
+- ¿Se permiten niños? ¿Tienen sillas altas o menú infantil?
+- ¿Se permiten mascotas?
+- ¿Puedo hacer pedidos para llevar/delivery?
+- ¿Aceptan tarjetas de crédito/débito? ¿Cuáles?
+- ¿Cobran cargo por servicio/cubierto?
+- ¿El local es accesible para sillas de ruedas?`;
+    } 
+    else if (lowercaseCategory.includes("tienda") || lowercaseCategory.includes("comercio") || lowercaseCategory.includes("mercado")) {
+      categorySpecificQuestions = `
+- ¿Cuál es el horario de atención?
+- ¿Tienen estacionamiento para clientes?
+- ¿Aceptan tarjetas de crédito/débito? ¿Permiten pagar en cuotas?
+- ¿Tienen servicio de entrega? ¿Cuál es el costo?
+- ¿Hacen cambios o devoluciones? ¿Cuál es la política?
+- ¿El local es accesible para sillas de ruedas?
+- ¿Puedo comprar por WhatsApp o redes sociales?
+- ¿Tienen programa de fidelidad?
+- ¿Cuáles son los productos/marcas más populares que venden?
+- ¿Trabajan con pedidos especiales?`;
+    }
+    // Continuar com outras categorias em espanhol...
+  }
   
-  return `Gere 5 perguntas e respostas otimizadas para a seção Q&A do Google Meu Negócio para:
+  // Prompt base para geração de Q&A
+  const basePrompt = language === "pt-BR" 
+    ? `Crie 5 pares de perguntas e respostas otimizadas para a seção Q&A do Google Meu Negócio para:
 
 INFORMAÇÕES DA EMPRESA:
 - Nome: ${businessInfo.name}
@@ -252,17 +571,82 @@ INFORMAÇÕES DA EMPRESA:
 - Telefone: ${businessInfo.phone || "-"}
 - Horário: ${businessInfo.hours || "-"}
 
-REQUISITOS:
-1. Crie 5 ${qaTopic}
-2. Perguntas práticas que clientes realmente fazem sobre este tipo de negócio
-3. Respostas concisas (máximo 1-2 frases) e informativas
-4. Inclua informações sobre acessibilidade, horários, serviços especiais, diferencial da empresa
-5. Foque no que é mais relevante para a categoria específica do negócio
-6. Permita à empresa demonstrar conhecimento, confiança e transparência
+INSTRUÇÕES:
+1. Crie 5 perguntas frequentes que potenciais clientes realmente fariam sobre este tipo de negócio
+2. Foque no que é mais relevante para a categoria "${businessInfo.category}"
+3. As perguntas devem ser diretas e simples, como os clientes realmente perguntariam
+4. As respostas devem ser informativas, concisas (máximo 2 frases) e específicas
+5. Evite respostas genéricas ou evasivas
+6. Use linguagem natural e conversacional
+7. Inclua informações práticas e úteis para o cliente
+8. A Q&A deve ajudar a converter pesquisas em visitas ao estabelecimento
 
-${qaFormat}
+FORMATO:
+Pergunta: [pergunta clara e direta]
+Resposta: [resposta concisa e específica]
 
-IMPORTANTE: Cada par de pergunta e resposta deve ser separado por uma linha em branco. Respostas devem ter no máximo 150 caracteres.`;
+PERGUNTAS COMUNS PARA ESTE SEGMENTO:${categorySpecificQuestions || "\n(Crie perguntas específicas para este segmento)"}
+
+IMPORTANTE: As perguntas devem soar naturais, como realmente feitas por clientes. As respostas devem ser precisas e úteis, limitadas a 150 caracteres. Separe cada par de pergunta e resposta com uma linha em branco.`
+    
+    : language === "en-US"
+    ? `Create 5 pairs of optimized questions and answers for the Q&A section of Google My Business for:
+
+BUSINESS INFORMATION:
+- Name: ${businessInfo.name}
+- Category: ${businessInfo.category}
+- Address: ${businessInfo.address}
+- Website: ${businessInfo.website || "-"}
+- Phone: ${businessInfo.phone || "-"}
+- Hours: ${businessInfo.hours || "-"}
+
+INSTRUCTIONS:
+1. Create 5 frequently asked questions that potential customers would actually ask about this type of business
+2. Focus on what is most relevant to the "${businessInfo.category}" category
+3. Questions should be direct and simple, as customers would actually ask
+4. Answers should be informative, concise (maximum 2 sentences) and specific
+5. Avoid generic or evasive answers
+6. Use natural and conversational language
+7. Include practical and useful information for the customer
+8. The Q&A should help convert searches into visits to the establishment
+
+FORMAT:
+Question: [clear and direct question]
+Answer: [concise and specific answer]
+
+COMMON QUESTIONS FOR THIS SEGMENT:${categorySpecificQuestions || "\n(Create specific questions for this segment)"}
+
+IMPORTANT: Questions should sound natural, as actually asked by customers. Answers should be accurate and helpful, limited to 150 characters. Separate each question and answer pair with a blank line.`
+    
+    : `Crea 5 pares de preguntas y respuestas optimizadas para la sección de Preguntas y Respuestas de Google Mi Negocio para:
+
+INFORMACIÓN DE LA EMPRESA:
+- Nombre: ${businessInfo.name}
+- Categoría: ${businessInfo.category}
+- Dirección: ${businessInfo.address}
+- Sitio web: ${businessInfo.website || "-"}
+- Teléfono: ${businessInfo.phone || "-"}
+- Horario: ${businessInfo.hours || "-"}
+
+INSTRUCCIONES:
+1. Crea 5 preguntas frecuentes que los clientes potenciales realmente harían sobre este tipo de negocio
+2. Concéntrate en lo más relevante para la categoría "${businessInfo.category}"
+3. Las preguntas deben ser directas y simples, como los clientes realmente preguntarían
+4. Las respuestas deben ser informativas, concisas (máximo 2 frases) y específicas
+5. Evita respuestas genéricas o evasivas
+6. Utiliza un lenguaje natural y conversacional
+7. Incluye información práctica y útil para el cliente
+8. Las preguntas y respuestas deben ayudar a convertir búsquedas en visitas al establecimiento
+
+FORMATO:
+Pregunta: [pregunta clara y directa]
+Respuesta: [respuesta concisa y específica]
+
+PREGUNTAS COMUNES PARA ESTE SEGMENTO:${categorySpecificQuestions || "\n(Crea preguntas específicas para este segmento)"}
+
+IMPORTANTE: Las preguntas deben sonar naturales, como realmente hechas por clientes. Las respuestas deben ser precisas y útiles, limitadas a 150 caracteres. Separa cada par de pregunta y respuesta con una línea en blanco.`;
+
+  return basePrompt;
 }
 
 // Construtor de prompt para posts padrão
