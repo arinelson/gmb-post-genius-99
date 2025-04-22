@@ -9,16 +9,15 @@ import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Copy, Sparkles, MessageSquare, Tag, Calendar, Info, Clock, 
-  MapPin, Globe, Phone, ImageIcon, Loader2, Settings, Whatsapp
+  MapPin, Globe, Phone, ImageIcon, Loader2, Settings, MessageCircle,
+  LightbulbIcon, Star, Share2, Check
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import SettingsModal from "@/components/SettingsModal";
 import { generatePostsWithGemini, getMockPosts } from "@/services/geminiService";
 import { Instagram } from 'lucide-react';
-import { Bulb, Star, Share2, Check } from 'lucide-react';
 
-// Gerador simples de palavras-chave baseado no nicho/categoria
 function gerarPalavrasChave(categoria: string) {
   if (!categoria) return [];
   const termos = categoria.toLowerCase();
@@ -42,7 +41,6 @@ function gerarPalavrasChave(categoria: string) {
   ];
 }
 
-// Componente visualização do post (Preview GMB)
 function GMBPostPreview({
   post,
   nomeEmpresa,
@@ -68,7 +66,6 @@ function GMBPostPreview({
         : { minHeight: 200, borderRadius: 20 }
       }
     >
-      {/* Header do post (exemplo realista GMB) */}
       <div className="flex items-center gap-3 px-4 pt-3 pb-1">
         <div className="rounded-full bg-blue-700/90 dark:bg-blue-500/90 w-10 h-10 flex items-center justify-center text-white font-bold text-xl">
           {nomeEmpresa ? nomeEmpresa[0] : <span>?</span>}
@@ -78,15 +75,12 @@ function GMBPostPreview({
           <div className="text-blue-700 dark:text-blue-300 text-xs">{categoria || "Categoria"}</div>
         </div>
       </div>
-      {/* Conteúdo do post */}
       <div className="px-4 py-2 text-blue-900 dark:text-blue-100 text-sm whitespace-pre-wrap">
         {post}
       </div>
-      {/* Endereço e rodapé Google style */}
       <div className="px-4 pb-3 pt-1 flex items-center gap-2 text-xs text-blue-800 dark:text-blue-300">
         <span className="truncate"><strong>Local:</strong> {endereco || "Endereço da Empresa"}</span>
       </div>
-      {/* Marca visual mobile */}
       {visualizacao === "mobile" && (
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-blue-200 rounded-t-lg" />
       )}
@@ -94,7 +88,6 @@ function GMBPostPreview({
   );
 }
 
-// Componente sugestões de palavras-chave
 function PalavrasChaveDestaque({ categoria }: { categoria: string }) {
   const palavras = gerarPalavrasChave(categoria);
   if (!palavras?.length) return null;
@@ -445,7 +438,6 @@ const Index = () => {
                 <CardDescription className="text-blue-100 text-sm md:text-base">
                   Escolha uma das opções abaixo ou use como inspiração para criar seu próprio post
                 </CardDescription>
-                {/* Opções visualização */}
                 <div className="mt-4 flex gap-3 justify-center">
                   <Button
                     variant={visualizacao === "desktop" ? "default" : "outline"}
@@ -469,7 +461,6 @@ const Index = () => {
                 <PalavrasChaveDestaque categoria={businessInfo.category} />
                 {generatedPosts.map((post, index) => (
                   <div key={index} className="border border-blue-200 dark:border-blue-800 p-3 md:p-4 rounded-md bg-white dark:bg-slate-800 shadow-md hover:shadow-lg transition-all animate-fade-in" style={{animationDelay: `${0.5 + index * 0.2}s`}}>
-                    {/* Visualização do post tipo Google Meu Negócio */}
                     <GMBPostPreview
                       post={post}
                       nomeEmpresa={businessInfo.name}
@@ -491,13 +482,12 @@ const Index = () => {
                         size="sm"
                         className="flex items-center gap-1 h-8 px-2 md:px-3 bg-green-500 hover:bg-green-600 text-white"
                         onClick={() => {
-                          // Abrir WhatsApp com texto do post
                           const msg = encodeURIComponent(post);
                           window.open(`https://wa.me/?text=${msg}`, "_blank");
                         }}
                         title="Compartilhar no WhatsApp"
                       >
-                        <Whatsapp size={14} />
+                        <MessageCircle size={14} />
                         <span className="sr-only md:not-sr-only">WhatsApp</span>
                       </Button>
                     </div>
@@ -522,7 +512,7 @@ const Index = () => {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 py-4 px-2">
                 <div className="bg-gradient-to-br from-blue-100/80 to-white/80 dark:from-blue-900/40 dark:to-slate-800/70 backdrop-blur-md border border-blue-100 dark:border-blue-800 p-4 rounded-2xl shadow-md hover:shadow-xl transition hover:scale-105 flex flex-col gap-2 animate-fade-in">
                   <div className="flex items-center gap-2">
-                    <Bulb size={18} className="text-blue-500 animate-pulse" />
+                    <LightbulbIcon size={18} className="text-blue-500 animate-pulse" />
                     <span className="font-bold text-blue-800 dark:text-blue-100 text-sm">Use Palavras-chave Locais</span>
                   </div>
                   <div className="text-xs md:text-sm text-blue-600 dark:text-blue-400 opacity-90 pl-6 flex gap-1 items-center">
@@ -539,7 +529,7 @@ const Index = () => {
                   </div>
                   <div className="text-xs md:text-sm text-green-900 dark:text-green-200 opacity-90 pl-6 flex gap-1 items-center">
                     <span>
-                      Adicione <span className="font-semibold underline decoration-green-400">chamadas para ação (CTAs)</span> claras como “Reserve já!” ou “Fale conosco”, tornando a comunicação mais engajadora.
+                      Adicione <span className="font-semibold underline decoration-green-400">chamadas para ação (CTAs)</span> claras como "Reserve já!" ou "Fale conosco", tornando a comunicação mais engajadora.
                     </span>
                     <Share2 size={14} className="ml-1 text-green-500" />
                   </div>
