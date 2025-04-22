@@ -1,4 +1,3 @@
-
 import { toast } from "@/hooks/use-toast";
 
 interface RateLimitStorage {
@@ -8,6 +7,7 @@ interface RateLimitStorage {
   dailyReset: number;
 }
 
+// Retém tudo, mas garante: 10s entre posts e máximo 30 diários por ip (localStorage por navegador)
 const COOLDOWN_PERIOD = 10000; // 10 seconds in milliseconds
 const DAILY_LIMIT = 30; // 30 posts per day
 const ONE_DAY = 24 * 60 * 60 * 1000; // 24 hours in milliseconds

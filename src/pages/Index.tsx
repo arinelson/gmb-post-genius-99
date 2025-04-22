@@ -7,10 +7,9 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
-import { 
-  Copy, Sparkles, MessageSquare, Tag, Calendar, Info, Clock, 
-  MapPin, Globe, Phone, ImageIcon, Loader2, Settings, MessageCircle,
-  LightbulbIcon, Star, Share2, Check, Instagram
+import {
+  Copy, MessageSquare, Tag, Calendar, Info, Clock,
+  MapPin, Globe, Phone, ImageIcon, Loader2, Settings, MessageCircle, Star, Share2, Check, Instagram
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -18,6 +17,10 @@ import SettingsModal from "@/components/SettingsModal";
 import { generatePostsWithGemini, getMockPosts } from "@/services/geminiService";
 import CountdownTimer from "@/components/CountdownTimer";
 import { useRateLimiter } from "@/services/rateLimiterService";
+
+const fontFamilyVar = {
+  fontFamily: "'Inter', 'Segoe UI', 'Helvetica Neue', Arial, 'sans-serif'",
+};
 
 function gerarPalavrasChave(categoria: string) {
   if (!categoria) return [];
@@ -40,6 +43,67 @@ function gerarPalavrasChave(categoria: string) {
     { termo: categoria, motivo: "Termo exato para buscas diretas do nicho." },
     { termo: "melhor da região", motivo: "Expressão genérica, mas muito buscada em avaliações." },
   ];
+}
+
+function KeywordFilters({ value, onChange }: { value: string, onChange: (v: string) => void }) {
+  return (
+    <div className="flex gap-2 flex-wrap items-center my-2">
+      <label className="text-xs font-semibold">Filtro:</label>
+      <select
+        className="p-1 rounded bg-blue-50 border text-xs shadow outline-none focus:border-blue-500 transition"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+      >
+        <option value="">Todos</option>
+        <option value="popular">Mais populares</option>
+        <option value="local">Locais</option>
+        <option value="promo">Promoções</option>
+        <option value="outros">Outros</option>
+      </select>
+    </div>
+  );
+}
+
+function PalavrasChaveDestaque({ categoria }: { categoria: string }) {
+  const [filter, setFilter] = useState("");
+  const palavras = gerarPalavrasChave(categoria);
+  const filtradas = palavras.filter(kw => {
+    if (!filter) return true;
+    if (filter === "popular" && kw.termo.includes("melhor")) return true;
+    if (filter === "local" && kw.termo.toLowerCase().includes("região")) return true;
+    if (filter === "promo" && kw.termo.toLowerCase().includes("oferta")) return true;
+    return false;
+  });
+  if (!palavras?.length) return null;
+
+  return (
+    <div style={fontFamilyVar} className="my-4 bg-gradient-to-br from-blue-50 to-blue-200 dark:from-slate-800/70 dark:to-blue-950/40 p-4 rounded-2xl border border-blue-200 dark:border-blue-700 shadow-xl shadow-blue-100/40 dark:shadow-blue-900/20 animate-fade-in hover:scale-105 hover:shadow-2xl transition-all duration-500">
+      <div className="flex items-center gap-2 mb-2">
+        <Tag size={18} className="text-blue-500 animate-fade-in" />
+        <span className="font-bold text-blue-900 dark:text-blue-100 text-base drop-shadow">Palavras-chave recomendadas para o seu nicho</span>
+      </div>
+      <KeywordFilters value={filter} onChange={setFilter} />
+      <ul className="flex flex-wrap gap-2 mt-2">
+        {filtradas.map((kw, i) => (
+          <li
+            key={i}
+            className="relative bg-blue-100/40 dark:bg-blue-900/20 group px-3 py-2 rounded-lg font-medium text-blue-800 dark:text-blue-200 text-xs shadow-inner cursor-pointer hover:scale-105 transition-transform duration-200 animate-fade-in"
+          >
+            <span className="font-bold">{kw.termo}</span>
+            <span className="absolute top-1 right-1 opacity-50 text-xs">
+              <Star className="inline-block" size={12} />
+            </span>
+            <div className="opacity-0 group-hover:opacity-100 absolute left-0 top-full mt-1 text-[11px] bg-white/90 dark:bg-blue-900/90 p-2 rounded shadow transition-all duration-300 w-60 z-10 pointer-events-none group-hover:pointer-events-auto">
+              {kw.motivo}
+            </div>
+          </li>
+        ))}
+      </ul>
+      <div className="text-xs mt-3 text-blue-700 dark:text-blue-300 italic animate-fade-in">
+        Gere sugestões ainda melhores ao conectar uma IA em breve!
+      </div>
+    </div>
+  );
 }
 
 function GMBPostPreview({
@@ -89,27 +153,83 @@ function GMBPostPreview({
   );
 }
 
-function PalavrasChaveDestaque({ categoria }: { categoria: string }) {
-  const palavras = gerarPalavrasChave(categoria);
-  if (!palavras?.length) return null;
-  return (
-    <div className="my-4 bg-blue-50 dark:bg-slate-800/40 p-3 rounded-md border border-blue-200 dark:border-blue-700 shadow-inner">
-      <div className="font-semibold text-blue-900 dark:text-blue-100 mb-1 text-sm flex items-center gap-1">
-        🔑 Palavras-chave recomendadas para o seu nicho
-      </div>
-      <ul className="list-disc list-inside space-y-1 ml-2">
-        {palavras.map((kw, i) => (
-          <li key={i} className="text-blue-800 dark:text-blue-200 text-xs">
-            <span className="font-bold">{kw.termo}</span> — <span className="italic">{kw.motivo}</span>
-          </li>
-        ))}
-      </ul>
-      <div className="text-xs mt-2 text-blue-700 dark:text-blue-300">
-        Use essas palavras no texto dos seus posts para ajudar seu negócio a ser encontrado mais facilmente no Google.
-      </div>
+const Dica = ({
+  icon,
+  title,
+  children,
+  delay,
+  colorClass
+}: {
+  icon: React.ReactNode;
+  title: string;
+  children: React.ReactNode;
+  delay?: number;
+  colorClass?: string;
+}) => (
+  <div
+    className={`relative flex flex-col gap-2 rounded-2xl bg-white/70 dark:bg-slate-800/70 border shadow-lg hover:shadow-2xl hover:-translate-y-1 transition-all duration-400 animate-fade-in ${colorClass ?? ""}`}
+    style={{
+      boxShadow: "0 6px 24px 0 rgba(38,74,144,.08)",
+      animationDelay: delay ? `${delay}ms` : undefined,
+      ...fontFamilyVar
+    }}
+  >
+    <div className="flex items-center gap-2 px-3 pt-4">
+      <span className="bg-gradient-to-br from-blue-100 via-blue-300 to-blue-500 dark:from-blue-900/30 dark:to-blue-800/70 p-3 rounded-full shadow animate-scale-in">
+        {icon}
+      </span>
+      <span className="font-bold text-blue-900 dark:text-blue-100 drop-shadow-sm text-base">{title}</span>
     </div>
-  );
-}
+    <div className="px-6 pb-4 text-[13px] md:text-sm text-blue-800 dark:text-blue-300 opacity-85">
+      {children}
+    </div>
+    <span className="absolute right-2 bottom-2 opacity-10 pointer-events-none animate-pulse">{icon}</span>
+  </div>
+);
+
+const DICAS = [
+  {
+    icon: <Tag size={19} className="text-blue-500" />,
+    title: "Use Palavras-chave Locais",
+    color: "",
+    text: (
+      <>
+        Inclua nomes de bairros, cidades ou regiões para impulsionar as <span className="font-semibold underline decoration-blue-400">buscas locais</span> e atrair quem está por perto.
+      </>
+    )
+  },
+  {
+    icon: <MessageSquare size={19} className="text-green-600" />,
+    title: "Incentive Interações",
+    color: "border-green-100 dark:border-green-600/40",
+    text: (
+      <>
+        Adicione <span className="font-semibold underline decoration-green-400">chamadas para ação</span> como “Reserve já!” ou “Fale conosco” para tornar a comunicação mais engajadora.
+      </>
+    )
+  },
+  {
+    icon: <ImageIcon size={19} className="text-yellow-600" />,
+    title: "Adicione Conteúdo Visual",
+    color: "border-yellow-100 dark:border-yellow-700/40",
+    text: (
+      <>
+        Imagens e vídeos de qualidade <span className="font-semibold">chamam atenção</span>
+        {' '}<span className="hidden md:inline-block">e geram mais confiança</span>, tornando <span className="font-semibold">seu perfil mais atrativo</span>.
+      </>
+    )
+  },
+  {
+    icon: <Check size={19} className="text-purple-600" />,
+    title: "Monitore e Responda",
+    color: "border-purple-100 dark:border-purple-700/40",
+    text: (
+      <>
+        Acompanhe comentários e <span className="font-semibold">responda rapidamente</span> para mostrar cuidado e aumentar <span className="font-semibold">o engajamento</span>.
+      </>
+    )
+  }
+];
 
 const Index = () => {
   const { toast } = useToast();
@@ -235,7 +355,7 @@ const Index = () => {
   const dailyPostsRemaining = rateLimit.dailyRemaining !== undefined ? rateLimit.dailyRemaining : 30;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-blue-950 dark:to-slate-900 transition-colors duration-500">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-blue-950 dark:to-slate-900 transition-colors duration-500" style={fontFamilyVar}>
       <div className="container px-4 py-6 md:py-10">
         <div className="flex justify-between mb-4">
           <Button
@@ -566,60 +686,21 @@ const Index = () => {
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0 md:p-2 dark:bg-slate-900/80 backdrop-blur-sm">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 py-4 px-2">
-                <div className="bg-gradient-to-br from-blue-100/80 to-white/80 dark:from-blue-900/40 dark:to-slate-800/70 backdrop-blur-md border border-blue-100 dark:border-blue-800/50 p-4 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 flex flex-col gap-2 animate-fade-in transform hover:translate-y-[-2px]">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-blue-500/20 dark:bg-blue-500/30 p-2 rounded-full">
-                      <LightbulbIcon size={18} className="text-blue-600 dark:text-blue-300 animate-pulse" />
-                    </div>
-                    <span className="font-bold text-blue-800 dark:text-blue-100 text-sm">Use Palavras-chave Locais</span>
-                  </div>
-                  <div className="text-xs md:text-sm text-blue-600 dark:text-blue-400 opacity-90 pl-6 flex gap-1 items-center">
-                    <span>
-                      Inclua <span className="font-semibold underline decoration-blue-400">nomes de bairros, cidades ou regiões</span> para impulsionar as buscas locais e atrair quem está por perto.
-                    </span>
-                    <Star size={14} className="ml-1 text-yellow-400 animate-pulse" />
-                  </div>
-                </div>
-                <div className="bg-gradient-to-br from-green-50/70 to-white/80 dark:from-blue-900/40 dark:to-slate-800/70 backdrop-blur-md border border-green-200 dark:border-blue-800/50 p-4 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 flex flex-col gap-2 animate-fade-in delay-100 transform hover:translate-y-[-2px]">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-green-500/20 dark:bg-green-500/30 p-2 rounded-full">
-                      <MessageSquare size={18} className="text-green-700 dark:text-green-300 animate-fade-in" />
-                    </div>
-                    <span className="font-bold text-green-900 dark:text-green-200 text-sm">Incentive Interações</span>
-                  </div>
-                  <div className="text-xs md:text-sm text-green-900 dark:text-green-200 opacity-90 pl-6 flex gap-1 items-center">
-                    <span>
-                      Adicione <span className="font-semibold underline decoration-green-400">chamadas para ação (CTAs)</span> claras como "Reserve já!" ou "Fale conosco", tornando a comunicação mais engajadora.
-                    </span>
-                    <Share2 size={14} className="ml-1 text-green-500 animate-pulse" />
-                  </div>
-                </div>
-                <div className="bg-gradient-to-br from-yellow-100/90 to-white/80 dark:from-blue-900/40 dark:to-slate-800/70 backdrop-blur-md border border-yellow-200 dark:border-blue-800/50 p-4 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 flex flex-col gap-2 animate-fade-in delay-200 transform hover:translate-y-[-2px]">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-yellow-500/20 dark:bg-yellow-500/30 p-2 rounded-full">
-                      <ImageIcon size={18} className="text-yellow-600 dark:text-yellow-300 animate-pulse" />
-                    </div>
-                    <span className="font-bold text-yellow-700 dark:text-yellow-300 text-sm">Adicione Conteúdo Visual</span>
-                  </div>
-                  <div className="text-xs md:text-sm text-yellow-900 dark:text-yellow-100 opacity-90 pl-6">
-                    Imagens e vídeos de qualidade <span className="font-semibold">chamam atenção</span> e geram mais confiança, tornando seu perfil mais atrativo e profissional.
-                  </div>
-                </div>
-                <div className="bg-gradient-to-br from-purple-100/90 to-white/80 dark:from-blue-900/40 dark:to-slate-800/70 backdrop-blur-md border border-purple-200 dark:border-blue-800/50 p-4 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 flex flex-col gap-2 animate-fade-in delay-300 transform hover:translate-y-[-2px]">
-                  <div className="flex items-center gap-2">
-                    <div className="bg-purple-500/20 dark:bg-purple-500/30 p-2 rounded-full">
-                      <Check size={18} className="text-purple-600 dark:text-purple-300 animate-pulse" />
-                    </div>
-                    <span className="font-bold text-purple-800 dark:text-purple-100 text-sm">Monitore e Responda</span>
-                  </div>
-                  <div className="text-xs md:text-sm text-purple-900 dark:text-purple-100 opacity-90 pl-6">
-                    Acompanhe comentários e <span className="font-semibold">responda rapidamente</span> para mostrar cuidado e aumentar o engajamento dos clientes.
-                  </div>
-                </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-6 py-4 px-2">
+                {DICAS.map((dica, idx) => (
+                  <Dica
+                    key={dica.title}
+                    icon={dica.icon}
+                    title={dica.title}
+                    colorClass={dica.color}
+                    delay={100 * idx}
+                  >
+                    {dica.text}
+                  </Dica>
+                ))}
               </div>
-              <div className="mt-2 pb-2 text-xs text-blue-700 dark:text-blue-300 text-center opacity-80 animate-fade-in delay-400">
-                Fique atento às tendências e personalize sempre que possível. Pequenas mudanças podem gerar grandes resultados!
+              <div className="mt-2 pb-2 text-xs text-blue-700 dark:text-blue-300 text-center opacity-80 animate-fade-in delay-500 font-medium tracking-wide">
+                “Detalhes fazem a diferença! Experimente, teste e refine seus posts para <span className="font-semibold underline decoration-blue-300">alcançar o seu público ideal</span>.”
               </div>
             </CardContent>
           </Card>
