@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Copy, MessageSquare, Tag, Calendar, Info, Clock,
-  MapPin, Globe, Phone, ImageIcon, Loader2, Settings, MessageCircle, Star, Share2, Check, Instagram
+  MapPin, Globe, Phone, ImageIcon, Loader2, Settings, MessageCircle, Star, Share2, Check, Instagram, Sparkles
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/ThemeToggle";
