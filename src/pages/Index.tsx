@@ -312,7 +312,7 @@ const Index = () => {
       if (!apiKey) {
         setTimeout(() => {
           const mockPosts = getMockPosts(postType, businessInfo, tone, language);
-          setGeneratedPosts(mockPosts);
+          setGeneratedPosts(Array.isArray(mockPosts) ? mockPosts : [mockPosts]);
           setLoading(false);
           rateLimiter.recordGeneration();
           updateCooldown();
@@ -325,7 +325,7 @@ const Index = () => {
       }
 
       const posts = await generatePostsWithGemini(postType, businessInfo, tone, language);
-      setGeneratedPosts(posts);
+      setGeneratedPosts(Array.isArray(posts) ? posts : [posts]);
       rateLimiter.recordGeneration();
       updateCooldown();
       toast({
@@ -341,7 +341,7 @@ const Index = () => {
       });
       
       const mockPosts = getMockPosts(postType, businessInfo, tone, language);
-      setGeneratedPosts(mockPosts);
+      setGeneratedPosts(Array.isArray(mockPosts) ? mockPosts : [mockPosts]);
     } finally {
       setLoading(false);
     }
@@ -763,6 +763,7 @@ const Index = () => {
       
       <SettingsModal
         open={settingsOpen}
+        onOpenChange={setSettingsOpen}
       />
     </div>
   );
