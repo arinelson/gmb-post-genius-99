@@ -16,6 +16,7 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import SettingsModal from "@/components/SettingsModal";
 import { generatePostsWithGemini, getMockPosts } from "@/services/geminiService";
 import { Instagram } from 'lucide-react';
+import { Bulb, Star, Share2, Check } from 'lucide-react';
 
 // Gerador simples de palavras-chave baseado no nicho/categoria
 function gerarPalavrasChave(categoria: string) {
@@ -506,51 +507,64 @@ const Index = () => {
             </Card>
           )}
 
-          <Card className="w-full max-w-4xl animate-fade-in delay-500 gradient-card shadow-lg dark:border-blue-800 dark:bg-slate-900/80">
-            <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-700 dark:to-blue-900 text-white rounded-t-lg p-4 md:p-6">
+          <Card className="w-full max-w-4xl animate-fade-in delay-500 gradient-card shadow-lg dark:border-blue-800 dark:bg-slate-900/80 glass-effect">
+            <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-700 dark:from-indigo-700 dark:to-blue-900 text-white rounded-t-lg p-4 md:p-6">
               <CardTitle className="text-xl md:text-2xl flex items-center justify-center gap-2 animate-float">
                 <Sparkles size={isMobile ? 20 : 24} className="animate-pulse text-yellow-200" />
-                Dicas e Recomendações
+                <span className="tracking-wide">Dicas & Recomendações</span>
                 <Sparkles size={isMobile ? 20 : 24} className="animate-pulse text-yellow-200" />
               </CardTitle>
-              <CardDescription className="text-blue-100 text-sm md:text-base">
-                Siga estas orientações para maximizar o impacto dos seus posts no Google Meu Negócio
+              <CardDescription className="text-blue-100 text-sm md:text-base opacity-90">
+                Maximize o impacto dos seus posts no Google Meu Negócio com estas sugestões práticas
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-4 md:p-6 dark:bg-slate-900/80">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                <div className="border border-blue-200 dark:border-blue-800 p-3 md:p-4 rounded-md bg-white dark:bg-slate-800 shadow hover:shadow-md transition-all hover:-translate-y-1">
-                  <h3 className="font-semibold mb-1 md:mb-2 text-blue-700 dark:text-blue-300 flex items-center gap-1 text-sm">
-                    <MapPin size={14} className="animate-pulse" /> Use Palavras-Chave Locais
-                  </h3>
-                  <p className="text-xs md:text-sm text-blue-600 dark:text-blue-400">
-                    Inclua nomes de bairros, cidades ou regiões próximas para aumentar a visibilidade local.
-                  </p>
+            <CardContent className="p-0 md:p-2 dark:bg-slate-900/80">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 py-4 px-2">
+                <div className="bg-gradient-to-br from-blue-100/80 to-white/80 dark:from-blue-900/40 dark:to-slate-800/70 backdrop-blur-md border border-blue-100 dark:border-blue-800 p-4 rounded-2xl shadow-md hover:shadow-xl transition hover:scale-105 flex flex-col gap-2 animate-fade-in">
+                  <div className="flex items-center gap-2">
+                    <Bulb size={18} className="text-blue-500 animate-pulse" />
+                    <span className="font-bold text-blue-800 dark:text-blue-100 text-sm">Use Palavras-chave Locais</span>
+                  </div>
+                  <div className="text-xs md:text-sm text-blue-600 dark:text-blue-400 opacity-90 pl-6 flex gap-1 items-center">
+                    <span>
+                      Inclua <span className="font-semibold underline decoration-blue-400">nomes de bairros, cidades ou regiões</span> para impulsionar as buscas locais e atrair quem está por perto.
+                    </span>
+                    <Star size={14} className="ml-1 text-yellow-400" />
+                  </div>
                 </div>
-                <div className="border border-blue-200 dark:border-blue-800 p-3 md:p-4 rounded-md bg-white dark:bg-slate-800 shadow hover:shadow-md transition-all hover:-translate-y-1">
-                  <h3 className="font-semibold mb-1 md:mb-2 text-blue-700 dark:text-blue-300 flex items-center gap-1 text-sm">
-                    <MessageSquare size={14} className="animate-pulse" /> Incentive Interações
-                  </h3>
-                  <p className="text-xs md:text-sm text-blue-600 dark:text-blue-400">
-                    Use chamadas para ação (CTAs) claras, como "Venha visitar!", "Reserve agora!" ou "Entre em contato".
-                  </p>
+                <div className="bg-gradient-to-br from-green-50/70 to-white/80 dark:from-blue-900/40 dark:to-slate-800/70 backdrop-blur-md border border-green-200 dark:border-blue-800 p-4 rounded-2xl shadow-md hover:shadow-xl transition hover:scale-105 flex flex-col gap-2 animate-fade-in delay-100">
+                  <div className="flex items-center gap-2">
+                    <MessageSquare size={18} className="text-green-700 dark:text-green-300 animate-fade-in" />
+                    <span className="font-bold text-green-900 dark:text-green-200 text-sm">Incentive Interações</span>
+                  </div>
+                  <div className="text-xs md:text-sm text-green-900 dark:text-green-200 opacity-90 pl-6 flex gap-1 items-center">
+                    <span>
+                      Adicione <span className="font-semibold underline decoration-green-400">chamadas para ação (CTAs)</span> claras como “Reserve já!” ou “Fale conosco”, tornando a comunicação mais engajadora.
+                    </span>
+                    <Share2 size={14} className="ml-1 text-green-500" />
+                  </div>
                 </div>
-                <div className="border border-blue-200 dark:border-blue-800 p-3 md:p-4 rounded-md bg-white dark:bg-slate-800 shadow hover:shadow-md transition-all hover:-translate-y-1">
-                  <h3 className="font-semibold mb-1 md:mb-2 text-blue-700 dark:text-blue-300 flex items-center gap-1 text-sm">
-                    <ImageIcon size={14} className="animate-pulse" /> Adicione Conteúdo Visual
-                  </h3>
-                  <p className="text-xs md:text-sm text-blue-600 dark:text-blue-400">
-                    Carregue fotos ou vídeos profissionais que mostrem produtos, serviços ou o ambiente da empresa.
-                  </p>
+                <div className="bg-gradient-to-br from-yellow-100/90 to-white/80 dark:from-blue-900/40 dark:to-slate-800/70 backdrop-blur-md border border-yellow-200 dark:border-blue-800 p-4 rounded-2xl shadow-md hover:shadow-xl transition hover:scale-105 flex flex-col gap-2 animate-fade-in delay-200">
+                  <div className="flex items-center gap-2">
+                    <ImageIcon size={18} className="text-yellow-500" />
+                    <span className="font-bold text-yellow-700 dark:text-yellow-300 text-sm">Adicione Conteúdo Visual</span>
+                  </div>
+                  <div className="text-xs md:text-sm text-yellow-900 dark:text-yellow-100 opacity-90 pl-6">
+                    Imagens e vídeos de qualidade <span className="font-semibold">chamam atenção</span> e geram mais confiança, tornando seu perfil mais atrativo e profissional.
+                  </div>
                 </div>
-                <div className="border border-blue-200 dark:border-blue-800 p-3 md:p-4 rounded-md bg-white dark:bg-slate-800 shadow hover:shadow-md transition-all hover:-translate-y-1">
-                  <h3 className="font-semibold mb-1 md:mb-2 text-blue-700 dark:text-blue-300 flex items-center gap-1 text-sm">
-                    <MessageSquare size={14} className="animate-pulse" /> Monitore e Responda
-                  </h3>
-                  <p className="text-xs md:text-sm text-blue-600 dark:text-blue-400">
-                    Após publicar o post, monitore comentários e responda rapidamente para engajar os clientes.
-                  </p>
+                <div className="bg-gradient-to-br from-purple-100/90 to-white/80 dark:from-blue-900/40 dark:to-slate-800/70 backdrop-blur-md border border-purple-200 dark:border-blue-800 p-4 rounded-2xl shadow-md hover:shadow-xl transition hover:scale-105 flex flex-col gap-2 animate-fade-in delay-300">
+                  <div className="flex items-center gap-2">
+                    <Check size={18} className="text-purple-600 dark:text-purple-300" />
+                    <span className="font-bold text-purple-800 dark:text-purple-100 text-sm">Monitore e Responda</span>
+                  </div>
+                  <div className="text-xs md:text-sm text-purple-900 dark:text-purple-100 opacity-90 pl-6">
+                    Acompanhe comentários e <span className="font-semibold">responda rapidamente</span> para mostrar cuidado e aumentar o engajamento dos clientes.
+                  </div>
                 </div>
+              </div>
+              <div className="mt-2 pb-2 text-xs text-blue-700 dark:text-blue-300 text-center opacity-80 animate-fade-in delay-400">
+                Fique atento às tendências e personalize sempre que possível. Pequenas mudanças podem gerar grandes resultados!
               </div>
             </CardContent>
           </Card>
