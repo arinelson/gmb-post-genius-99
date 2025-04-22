@@ -17,9 +17,6 @@ import SettingsModal from "@/components/SettingsModal";
 import { generatePostsWithGemini, getMockPosts } from "@/services/geminiService";
 import CountdownTimer from "@/components/CountdownTimer";
 import { useRateLimiter } from "@/services/rateLimiterService";
-import ReviewReplyGenerator from "@/components/gmb-tools/ReviewReplyGenerator";
-import DescriptionGenerator from "@/components/gmb-tools/DescriptionGenerator";
-import FaqGenerator from "@/components/gmb-tools/FaqGenerator";
 
 const fontFamilyVar = {
   fontFamily: "'Inter', 'Segoe UI', 'Helvetica Neue', Arial, 'sans-serif'",
@@ -252,7 +249,6 @@ const Index = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [visualizacao, setVisualizacao] = useState<"desktop" | "mobile">("desktop");
   const [cooldownTime, setCooldownTime] = useState(0);
-  const [abaAtiva, setAbaAtiva] = useState<"posts" | "descricao" | "resposta" | "faq">("posts");
   const isMobile = useIsMobile();
   const rateLimiter = useRateLimiter();
 
@@ -361,22 +357,30 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-blue-950 dark:to-slate-900 transition-colors duration-500" style={fontFamilyVar}>
       <div className="container px-4 py-6 md:py-10">
-        <div className="flex justify-center gap-2 mb-7 mt-2">
-          <Button variant={abaAtiva === "posts" ? "default" : "outline"} onClick={() => setAbaAtiva("posts")}>
-            Gerador de Posts
+        <div className="flex justify-between mb-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSettingsOpen(true)}
+            className="rounded-full w-10 h-10 bg-white/80 dark:bg-slate-800 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 transition-all duration-300 shadow-md animate-pulse hover:animate-none"
+          >
+            <Settings className="h-5 w-5 text-blue-700 dark:text-blue-400" />
+            <span className="sr-only">Configurações</span>
           </Button>
-          <Button variant={abaAtiva === "descricao" ? "default" : "outline"} onClick={() => setAbaAtiva("descricao")}>
-            Descrição GMB
-          </Button>
-          <Button variant={abaAtiva === "resposta" ? "default" : "outline"} onClick={() => setAbaAtiva("resposta")}>
-            Respostas de Avaliações
-          </Button>
-          <Button variant={abaAtiva === "faq" ? "default" : "outline"} onClick={() => setAbaAtiva("faq")}>
-            Perguntas & Respostas
-          </Button>
+          <ThemeToggle />
         </div>
-        {abaAtiva === "posts" && (
-          <Card className="w-full max-w-4xl animate-fade-in shadow-lg border-blue-200 dark:border-blue-800 dark:bg-slate-900/80 transform transition-all duration-300 hover:shadow-xl">
+        
+        <div className="flex flex-col items-center justify-center space-y-6 md:space-y-8 text-center">
+          <div className="animate-fade-in w-full">
+            <h1 className="text-2xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-400 dark:to-blue-200 bg-clip-text text-transparent animate-pulse">
+              GMB Post Generator
+            </h1>
+            <p className="text-sm md:text-lg text-blue-700 dark:text-blue-300 mt-2 animate-fade-in delay-200 px-2 font-light tracking-wide">
+              Gere posts personalizados para o Google Meu Negócio em segundos
+            </p>
+          </div>
+
+          <Card className="w-full max-w-4xl gradient-card animate-fade-in delay-300 shadow-lg dark:border-blue-800 dark:bg-slate-900/80 transform transition-all duration-300 hover:shadow-xl">
             <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-700 dark:to-blue-900 text-white rounded-t-lg p-4 md:p-6">
               <CardTitle className="text-xl md:text-2xl flex items-center justify-center gap-2 animate-float">
                 <Sparkles size={isMobile ? 20 : 24} className="animate-pulse text-yellow-200" />
@@ -599,154 +603,111 @@ const Index = () => {
               </div>
             </CardContent>
           </Card>
-        )}
-        {abaAtiva === "descricao" && (
-          <Card className="w-full max-w-3xl mx-auto animate-fade-in shadow-lg border-blue-200 dark:border-blue-800 mt-5">
-            <CardHeader className="bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-800 dark:to-blue-900 text-white rounded-t-lg p-4 md:p-6">
-              <CardTitle className="flex items-center gap-2 text-lg md:text-2xl">
-                Gerador de Descrição GMB
-              </CardTitle>
-              <CardDescription>
-                Gere uma descrição atrativa e dentro dos parâmetros do Google Meu Negócio para se destacar no ranking local.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-5 dark:bg-slate-900/80">
-              <DescriptionGenerator businessInfo={businessInfo} />
-            </CardContent>
-          </Card>
-        )}
-        {abaAtiva === "resposta" && (
-          <Card className="w-full max-w-3xl mx-auto animate-fade-in shadow-lg border-blue-200 dark:border-blue-800 mt-5">
-            <CardHeader className="bg-gradient-to-r from-blue-800 to-blue-600 dark:from-blue-900 dark:to-blue-700 text-white rounded-t-lg p-4 md:p-6">
-              <CardTitle className="flex items-center gap-2 text-lg md:text-2xl">
-                Gerador de Respostas de Avaliações
-              </CardTitle>
-              <CardDescription>
-                Sugira respostas automáticas para avaliações recebidas no Google Meu Negócio, otimizando a sua reputação online.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-5 dark:bg-slate-900/80">
-              <ReviewReplyGenerator businessInfo={businessInfo} />
-            </CardContent>
-          </Card>
-        )}
-        {abaAtiva === "faq" && (
-          <Card className="w-full max-w-3xl mx-auto animate-fade-in shadow-lg border-blue-200 dark:border-blue-800 mt-5">
-            <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-700 dark:from-blue-700 dark:to-blue-900 text-white rounded-t-lg p-4 md:p-6">
-              <CardTitle className="flex items-center gap-2 text-lg md:text-2xl">
-                Gerador de Perguntas & Respostas
-              </CardTitle>
-              <CardDescription>
-                Crie seções de perguntas frequentes e respostas para enriquecer sua página do GMB e esclarecer as principais dúvidas dos clientes.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="p-5 dark:bg-slate-900/80">
-              <FaqGenerator businessInfo={businessInfo} />
-            </CardContent>
-          </Card>
-        )}
-        {generatedPosts.length > 0 && (
-          <Card className="w-full max-w-4xl animate-fade-in delay-400 shadow-lg border-blue-200 dark:border-blue-800 dark:bg-slate-900/80">
-            <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-700 dark:to-blue-900 text-white rounded-t-lg p-4 md:p-6">
+
+          {generatedPosts.length > 0 && (
+            <Card className="w-full max-w-4xl animate-fade-in delay-400 shadow-lg border-blue-200 dark:border-blue-800 dark:bg-slate-900/80">
+              <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-700 dark:to-blue-900 text-white rounded-t-lg p-4 md:p-6">
+                <CardTitle className="text-xl md:text-2xl flex items-center justify-center gap-2 animate-float">
+                  <Sparkles size={isMobile ? 20 : 24} className="animate-pulse text-yellow-200" />
+                  Sugestões de Posts
+                  <Sparkles size={isMobile ? 20 : 24} className="animate-pulse text-yellow-200" />
+                </CardTitle>
+                <CardDescription className="text-blue-100 text-sm md:text-base">
+                  Escolha uma das opções abaixo ou use como inspiração para criar seu próprio post
+                </CardDescription>
+                <div className="mt-4 flex gap-3 justify-center">
+                  <Button
+                    variant={visualizacao === "desktop" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setVisualizacao("desktop")}
+                    className={visualizacao === "desktop" ? "bg-blue-800 text-white" : ""}
+                  >
+                    Desktop
+                  </Button>
+                  <Button
+                    variant={visualizacao === "mobile" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setVisualizacao("mobile")}
+                    className={visualizacao === "mobile" ? "bg-blue-500 text-white" : ""}
+                  >
+                    Mobile
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4 md:space-y-6 p-4 md:p-6 dark:bg-slate-900/80">
+                <PalavrasChaveDestaque categoria={businessInfo.category} />
+                {generatedPosts.map((post, index) => (
+                  <div key={index} className="border border-blue-200 dark:border-blue-800 p-3 md:p-4 rounded-md bg-white dark:bg-slate-800 shadow-md hover:shadow-lg transition-all animate-fade-in" style={{animationDelay: `${0.5 + index * 0.2}s`}}>
+                    <GMBPostPreview
+                      post={post}
+                      nomeEmpresa={businessInfo.name}
+                      categoria={businessInfo.category}
+                      visualizacao={visualizacao}
+                      endereco={businessInfo.address}
+                    />
+                    <div className="flex justify-end gap-2 mt-3">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={() => copyToClipboard(post)}
+                        className="hover:bg-blue-100 dark:hover:bg-blue-900 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 flex items-center gap-1 text-xs md:text-sm h-8 px-2 md:px-3"
+                      >
+                        <Copy size={14} /> Copiar
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="flex items-center gap-1 h-8 px-2 md:px-3 bg-green-500 hover:bg-green-600 text-white"
+                        onClick={() => {
+                          const msg = encodeURIComponent(post);
+                          window.open(`https://wa.me/?text=${msg}`, "_blank");
+                        }}
+                        title="Compartilhar no WhatsApp"
+                      >
+                        <MessageCircle size={14} />
+                        <span className="sr-only md:not-sr-only">WhatsApp</span>
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+          )}
+
+          <Card className="w-full max-w-4xl animate-fade-in delay-500 shadow-lg dark:border-blue-800 dark:bg-slate-900/80 glass-effect overflow-hidden">
+            <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-700 dark:from-indigo-700 dark:to-blue-900 text-white rounded-t-lg p-4 md:p-6">
               <CardTitle className="text-xl md:text-2xl flex items-center justify-center gap-2 animate-float">
                 <Sparkles size={isMobile ? 20 : 24} className="animate-pulse text-yellow-200" />
-                Sugestões de Posts
+                <span className="tracking-wide font-semibold">Dicas & Recomendações</span>
                 <Sparkles size={isMobile ? 20 : 24} className="animate-pulse text-yellow-200" />
               </CardTitle>
-              <CardDescription className="text-blue-100 text-sm md:text-base">
-                Escolha uma das opções abaixo ou use como inspiração para criar seu próprio post
+              <CardDescription className="text-blue-100 text-sm md:text-base opacity-90">
+                Maximize o impacto dos seus posts no Google Meu Negócio com estas sugestões práticas
               </CardDescription>
-              <div className="mt-4 flex gap-3 justify-center">
-                <Button
-                  variant={visualizacao === "desktop" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setVisualizacao("desktop")}
-                  className={visualizacao === "desktop" ? "bg-blue-800 text-white" : ""}
-                >
-                  Desktop
-                </Button>
-                <Button
-                  variant={visualizacao === "mobile" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setVisualizacao("mobile")}
-                  className={visualizacao === "mobile" ? "bg-blue-500 text-white" : ""}
-                >
-                  Mobile
-                </Button>
-              </div>
             </CardHeader>
-            <CardContent className="space-y-4 md:space-y-6 p-4 md:p-6 dark:bg-slate-900/80">
-              <PalavrasChaveDestaque categoria={businessInfo.category} />
-              {generatedPosts.map((post, index) => (
-                <div key={index} className="border border-blue-200 dark:border-blue-800 p-3 md:p-4 rounded-md bg-white dark:bg-slate-800 shadow-md hover:shadow-lg transition-all animate-fade-in" style={{animationDelay: `${0.5 + index * 0.2}s`}}>
-                  <GMBPostPreview
-                    post={post}
-                    nomeEmpresa={businessInfo.name}
-                    categoria={businessInfo.category}
-                    visualizacao={visualizacao}
-                    endereco={businessInfo.address}
-                  />
-                  <div className="flex justify-end gap-2 mt-3">
-                    <Button 
-                      variant="outline" 
-                      size="sm" 
-                      onClick={() => copyToClipboard(post)}
-                      className="hover:bg-blue-100 dark:hover:bg-blue-900 border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 flex items-center gap-1 text-xs md:text-sm h-8 px-2 md:px-3"
-                    >
-                      <Copy size={14} /> Copiar
-                    </Button>
-                    <Button
-                      variant="secondary"
-                      size="sm"
-                      className="flex items-center gap-1 h-8 px-2 md:px-3 bg-green-500 hover:bg-green-600 text-white"
-                      onClick={() => {
-                        const msg = encodeURIComponent(post);
-                        window.open(`https://wa.me/?text=${msg}`, "_blank");
-                      }}
-                      title="Compartilhar no WhatsApp"
-                    >
-                      <MessageCircle size={14} />
-                      <span className="sr-only md:not-sr-only">WhatsApp</span>
-                    </Button>
-                  </div>
-                </div>
-              ))}
+            <CardContent className="p-0 md:p-2 dark:bg-slate-900/80 backdrop-blur-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-6 py-4 px-2">
+                {DICAS.map((dica, idx) => (
+                  <Dica
+                    key={dica.title}
+                    icon={dica.icon}
+                    title={dica.title}
+                    colorClass={dica.color}
+                    delay={100 * idx}
+                  >
+                    {dica.text}
+                  </Dica>
+                ))}
+              </div>
+              <div className="mt-2 pb-2 text-xs text-blue-700 dark:text-blue-300 text-center opacity-80 animate-fade-in delay-500 font-medium tracking-wide">
+                “Detalhes fazem a diferença! Experimente, teste e refine seus posts para <span className="font-semibold underline decoration-blue-300">alcançar o seu público ideal</span>.”
+              </div>
             </CardContent>
           </Card>
-        )}
-        <Card className="w-full max-w-4xl animate-fade-in delay-500 shadow-lg dark:border-blue-800 dark:bg-slate-900/80 glass-effect overflow-hidden">
-          <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-700 dark:from-indigo-700 dark:to-blue-900 text-white rounded-t-lg p-4 md:p-6">
-            <CardTitle className="text-xl md:text-2xl flex items-center justify-center gap-2 animate-float">
-              <Sparkles size={isMobile ? 20 : 24} className="animate-pulse text-yellow-200" />
-              <span className="tracking-wide font-semibold">Dicas & Recomendações</span>
-              <Sparkles size={isMobile ? 20 : 24} className="animate-pulse text-yellow-200" />
-            </CardTitle>
-            <CardDescription className="text-blue-100 text-sm md:text-base opacity-90">
-              Maximize o impacto dos seus posts no Google Meu Negócio com estas sugestões práticas
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="p-0 md:p-2 dark:bg-slate-900/80 backdrop-blur-sm">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-6 py-4 px-2">
-              {DICAS.map((dica, idx) => (
-                <Dica
-                  key={dica.title}
-                  icon={dica.icon}
-                  title={dica.title}
-                  colorClass={dica.color}
-                  delay={100 * idx}
-                >
-                  {dica.text}
-                </Dica>
-              ))}
-            </div>
-            <div className="mt-2 pb-2 text-xs text-blue-700 dark:text-blue-300 text-center opacity-80 animate-fade-in delay-500 font-medium tracking-wide">
-              “Detalhes fazem a diferença! Experimente, teste e refine seus posts para <span className="font-semibold underline decoration-blue-300">alcançar o seu público ideal</span>.”
-            </div>
-          </CardContent>
-        </Card>
-        
-        <div className="text-xs text-blue-500 dark:text-blue-400 mt-4 opacity-75">
-          &copy; 2025 GMB Post Generator | Todos os direitos reservados
+          
+          <div className="text-xs text-blue-500 dark:text-blue-400 mt-4 opacity-75">
+            &copy; 2025 GMB Post Generator | Todos os direitos reservados
+          </div>
         </div>
       </div>
       
