@@ -455,21 +455,40 @@ const Index = () => {
 
         <div className="w-full lg:max-w-4xl mx-auto">
           <Tabs defaultValue="posts" className="w-full animate-fade-in delay-300 min-w-0">
-            <div className="overflow-x-auto">
-              <TabsList className="grid grid-cols-4 gap-1 mb-4 w-[420px] min-w-full md:w-full md:max-w-4xl overflow-x-auto">
-                <TabsTrigger value="posts" className="flex items-center justify-center gap-2 min-w-[120px]">
-                  <MessageSquare size={18}/> Posts
-                </TabsTrigger>
-                <TabsTrigger value="desc" className="flex items-center justify-center gap-2 min-w-[120px]">
-                  <FileText size={18}/> Descrição
-                </TabsTrigger>
-                <TabsTrigger value="review" className="flex items-center justify-center gap-2 min-w-[120px]">
-                  <Sparkles size={18}/> Respostas de Avaliações
-                </TabsTrigger>
-                <TabsTrigger value="qa" className="flex items-center justify-center gap-2 min-w-[140px]">
-                  <HelpCircle size={18}/> Perguntas & Respostas
-                </TabsTrigger>
-              </TabsList>
+            <div className="relative">
+              <div className="overflow-x-auto scrollbar-hide mask-tabs" style={{ WebkitOverflowScrolling: "touch" }}>
+                <TabsList
+                  className="
+                    flex-nowrap
+                    grid-cols-4
+                    gap-1
+                    mb-4
+                    w-[420px]
+                    min-w-[410px]
+                    md:w-full md:max-w-4xl
+                    overflow-x-auto
+                    md:overflow-visible
+                    px-1
+                    py-0
+                  "
+                  style={{ minWidth: "370px" }}
+                >
+                  <TabsTrigger value="posts" className="flex items-center justify-center gap-2 min-w-[120px]">
+                    <MessageSquare size={18}/> Posts
+                  </TabsTrigger>
+                  <TabsTrigger value="desc" className="flex items-center justify-center gap-2 min-w-[120px]">
+                    <FileText size={18}/> Descrição
+                  </TabsTrigger>
+                  <TabsTrigger value="review" className="flex items-center justify-center gap-2 min-w-[120px]">
+                    <Sparkles size={18}/> Respostas de Avaliações
+                  </TabsTrigger>
+                  <TabsTrigger value="qa" className="flex items-center justify-center gap-2 min-w-[140px]">
+                    <HelpCircle size={18}/> Perguntas & Respostas
+                  </TabsTrigger>
+                </TabsList>
+                <div className="pointer-events-none absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-white dark:from-blue-950 to-transparent" />
+                <div className="pointer-events-none absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-white dark:from-blue-950 to-transparent" />
+              </div>
             </div>
 
             <TabsContent value="posts">
