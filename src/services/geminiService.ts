@@ -35,9 +35,10 @@ export const generatePostsWithGemini = async (
     postTypeLabel = postType === "update" ? "actualizaciones" : postType === "offer" ? "ofertas" : "eventos";
   }
 
-  // Create a prompt for Gemini
+  // Improved Prompt
   const prompt = `
-    Create 3 Google My Business posts for a business with the following details:
+    You are a professional Google My Business content creator. 
+    Create 3 unique Google My Business posts for a business with these details:
     - Business Name: ${businessInfo.name}
     - Category: ${businessInfo.category}
     - Website: ${businessInfo.website || "N/A"}
@@ -48,13 +49,20 @@ export const generatePostsWithGemini = async (
     Post Type: ${postTypeLabel} (${postType})
     Tone: ${tone}
     Language: ${languageLabel} (${language})
-    
-    Please create 3 unique posts that would be appropriate for Google My Business. 
-    Each post should be concise (under 1500 characters), include relevant hashtags, 
-    and be optimized for local search.
-    
-    Format each post as plain text with appropriate line breaks and emojis where relevant.
-    Do not include any explanations, just the 3 posts separated with triple dashes (---).
+
+    Each post must:
+    - Be concise (preferably under 1500 characters)
+    - Use a professional, natural, and approachable tone (avoid childish style)
+    - Include NO MORE THAN TWO hashtags (and only if they are relevant, not obligatory)
+    - LIMIT the use of emojis (max one per post, only if it adds value)
+    - Avoid repeating the same template or structure in every post
+    - Be suitable for local search optimization
+
+    Instructions:
+    - Format: plain text with appropriate line breaks.
+    - No titles, explanations, or numbering.
+    - Separate each post with three dashes (---).
+    - Do NOT include explanatory text or any output besides the posts themselves.
   `;
 
   try {
