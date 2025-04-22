@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,10 +9,12 @@ import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Copy, Sparkles, MessageSquare, Tag, Calendar, Info, Clock, 
-  MapPin, Globe, Phone, ImageIcon, Moon, Sun, Loader2
+  MapPin, Globe, Phone, ImageIcon, Loader2, Settings
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import SettingsModal from "@/components/SettingsModal";
+import { generatePostsWithGemini, getMockPosts } from "@/services/geminiService";
 
 const Index = () => {
   const { toast } = useToast();
@@ -30,6 +31,7 @@ const Index = () => {
   const [tone, setTone] = useState("friendly");
   const [language, setLanguage] = useState("pt-BR");
   const [generatedPosts, setGeneratedPosts] = useState<string[]>([]);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const isMobile = useIsMobile();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -50,25 +52,38 @@ const Index = () => {
   const handleGeneratePosts = async () => {
     setLoading(true);
     try {
-      // In a real implementation, this would call the Gemini API
-      // For now, we'll just mock the response
+      const apiKey = localStorage.getItem("geminiApiKey");
       
-      setTimeout(() => {
-        const mockPosts = getMockPosts(postType, businessInfo, tone);
-        setGeneratedPosts(mockPosts);
-        setLoading(false);
-        toast({
-          title: "Posts gerados com sucesso!",
-          description: "Confira as sugestões abaixo e escolha a que mais combina com seu negócio.",
-        });
-      }, 2000);
+      if (!apiKey) {
+        setTimeout(() => {
+          const mockPosts = getMockPosts(postType, businessInfo, tone, language);
+          setGeneratedPosts(mockPosts);
+          setLoading(false);
+          toast({
+            title: "Posts gerados com dados de exemplo",
+            description: "Para obter posts personalizados, configure sua API key nas configurações.",
+          });
+        }, 1000);
+        return;
+      }
+
+      const posts = await generatePostsWithGemini(postType, businessInfo, tone, language);
+      setGeneratedPosts(posts);
+      toast({
+        title: "Posts gerados com sucesso!",
+        description: "Confira as sugestões abaixo e escolha a que mais combina com seu negócio.",
+      });
     } catch (error) {
       console.error("Error generating posts:", error);
       toast({
         title: "Erro ao gerar posts",
-        description: "Ocorreu um erro ao gerar os posts. Por favor, tente novamente.",
+        description: error instanceof Error ? error.message : "Ocorreu um erro ao gerar os posts. Por favor, tente novamente.",
         variant: "destructive",
       });
+      
+      const mockPosts = getMockPosts(postType, businessInfo, tone, language);
+      setGeneratedPosts(mockPosts);
+    } finally {
       setLoading(false);
     }
   };
@@ -84,7 +99,16 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-blue-950 dark:to-slate-900 transition-colors duration-300">
       <div className="container px-4 py-6 md:py-10">
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-between mb-4">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setSettingsOpen(true)}
+            className="rounded-full w-10 h-10 bg-white/80 dark:bg-slate-800 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 transition-all"
+          >
+            <Settings className="h-5 w-5 text-blue-700 dark:text-blue-400" />
+            <span className="sr-only">Configurações</span>
+          </Button>
           <ThemeToggle />
         </div>
         
@@ -399,74 +423,10 @@ const Index = () => {
           </div>
         </div>
       </div>
+      
+      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
     </div>
   );
 };
 
-// Mock function to generate example posts
-const getMockPosts = (
-  postType: string, 
-  businessInfo: {
-    name: string;
-    category: string;
-    website: string;
-    address: string;
-    phone: string;
-    hours: string;
-  }, 
-  tone: string
-) => {
-  const { name, category, address } = businessInfo;
-  
-  if (postType === "update") {
-    if (tone === "friendly") {
-      return [
-        `🌟 Olá, comunidade incrível!\n\nNo ${name}, somos muito mais do que seu ${category} diário — somos seu ponto de encontro local onde todo mundo sabe o seu nome! De produtos frescos aos seus favoritos, nossos corredores estão cheios de produtos de qualidade a preços que farão você sorrir. Venha dar uma olhada nas surpresas deliciosas que temos para você hoje!\n\n📍 Localizado em ${address}. Não podemos esperar para recebê-lo(a)! 😊 #ShopLocal`,
-        
-        `👋 Olá, queridos vizinhos!\n\nNo ${name}, tudo é sobre unir nossa comunidade através de produtos fantásticos e uma experiência de compra calorosa. Temos tudo o que você precisa sob um mesmo teto e uma equipe amigável pronta para ajudá-lo(a) com um sorriso. Seja para comprar ou apenas passar por aqui para conversar, nossas portas sempre estarão abertas para você.\n\n📍 Visite-nos em ${address}. Estamos ansiosos para te ver em breve! 😊 #CommunityLove`
-      ];
-    } else if (tone === "promotional") {
-      return [
-        `✨ NOVIDADES NO ${name.toUpperCase()} ✨\n\nAcabamos de renovar nossa loja para oferecer a melhor experiência em ${category}! Novos produtos, ambiente renovado e o mesmo atendimento de qualidade que você já conhece. Venha conferir todas as mudanças que fizemos pensando em você!\n\n📍 ${address} | Esperamos sua visita! 🛍️`,
-        
-        `🚨 ATENÇÃO CLIENTES DO ${name.toUpperCase()} 🚨\n\nTemos muitas novidades para compartilhar! Nosso ${category} está com produtos novos em todas as seções, e nossos colaboradores estão prontos para te ajudar a encontrar tudo o que você precisa. Não perca tempo e venha conferir!\n\n📍 Estamos localizados em ${address}. Te esperamos! 💯`
-      ];
-    } else {
-      // Default to friendly tone if other tones not implemented yet
-      return [
-        `🌟 Olá a todos!\n\nNo ${name}, estamos sempre buscando trazer o melhor para nossos clientes. Como seu ${category} de confiança, temos orgulho de oferecer produtos e serviços de qualidade. Venha nos visitar e descubra por que somos referência na região!\n\n📍 ${address} | Aguardamos sua visita! 😊`,
-        
-        `👋 Olá comunidade!\n\nO ${name} está sempre se renovando para melhor atender você. Temos novidades chegando toda semana para garantir que nosso ${category} sempre ofereça a melhor experiência. Fique de olho em nossas redes sociais para saber mais!\n\n📍 Venha nos visitar em ${address}. Será um prazer recebê-lo! 🌻`
-      ];
-    }
-  } else if (postType === "offer") {
-    if (tone === "promotional") {
-      return [
-        `🔥 PROMOÇÃO IMPERDÍVEL NO ${name.toUpperCase()} 🔥\n\n30% DE DESCONTO em produtos selecionados! É a sua chance de economizar enquanto aproveita o melhor que nosso ${category} tem a oferecer. Promoção válida somente esta semana, não perca tempo!\n\n📍 ${address} | ⏰ Corra, é por tempo limitado!`,
-        
-        `💰 ECONOMIA GARANTIDA NO ${name.toUpperCase()} 💰\n\nCOMPRE 1 LEVE 2 em itens selecionados! Isso mesmo, você leu certo. É a chance perfeita para conhecer nosso ${category} e sair com mais produtos pagando menos. Promoção válida enquanto durarem os estoques.\n\n📍 ${address} | ⚡ Não deixe para depois!`
-      ];
-    } else {
-      return [
-        `🎁 Oferta especial para nossos clientes!\n\nO ${name} está com uma promoção exclusiva esta semana! Venha conferir descontos de até 20% em produtos selecionados do nosso ${category}. É nossa forma de agradecer pela sua preferência.\n\n📍 ${address} | Oferta válida enquanto durarem os estoques.`,
-        
-        `💫 Descontos especiais no ${name}!\n\nPrepare-se para economizar! Estamos com ofertas em diversos produtos do nosso ${category}. Não perca esta oportunidade de adquirir o que você precisa com preços imbatíveis.\n\n📍 Visite-nos em ${address} e aproveite!`
-      ];
-    }
-  } else if (postType === "event") {
-    return [
-      `🎉 EVENTO ESPECIAL NO ${name.toUpperCase()} 🎉\n\nTemos o prazer de convidar você para nosso workshop gratuito sobre "${category}" neste sábado às 15h! Venha aprender com especialistas e ainda participe do sorteio de brindes exclusivos.\n\n📍 ${address} | 📝 Vagas limitadas! Confirme sua presença pelo telefone.`,
-      
-      `✨ SAVE THE DATE ✨\n\nO ${name} apresenta: Feira de ${category} - Um evento imperdível para toda a família! Teremos demonstrações, degustações e atividades para crianças. Entrada gratuita!\n\nQuando: Próximo domingo, das 10h às 18h\nOnde: ${address}\n\nTraga seus amigos e familiares! 🌟`
-    ];
-  }
-  
-  return [
-    `Nosso ${category} ${name} está sempre à disposição para atender você com qualidade e excelência. Visite-nos em ${address} e descubra por que somos a escolha preferida de tantos clientes!\n\n#${category} #Qualidade #Atendimento`,
-    
-    `${name}: seu ${category} de confiança!\n\nEstamos localizados em ${address}, prontos para oferecer a melhor experiência em produtos e serviços. Venha nos conhecer e faça parte da nossa família de clientes satisfeitos!`
-  ];
-};
-
 export default Index;
-
