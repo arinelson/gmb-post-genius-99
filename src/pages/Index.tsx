@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -9,7 +10,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Copy, MessageSquare, Tag, Calendar, Info, Clock,
-  MapPin, Globe, Phone, ImageIcon, Loader2, Settings, MessageCircle, Star, Share2, Check, Instagram, Sparkles
+  MapPin, Globe, Phone, ImageIcon, Loader2, Settings, MessageCircle, Star, Share2, Check, Instagram, Sparkles, HelpCircle
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -472,21 +473,8 @@ const Index = () => {
           </TabsList>
 
           <TabsContent value="posts">
-            <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-blue-950 dark:to-slate-900 transition-colors duration-500" style={fontFamilyVar}>
+            <div className="min-h-[50vh] bg-gradient-to-br from-blue-50 to-white dark:from-blue-950 dark:to-slate-900 transition-colors duration-500" style={fontFamilyVar}>
               <div className="container px-4 py-6 md:py-10">
-                <div className="flex justify-between mb-4">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => setSettingsOpen(true)}
-                    className="rounded-full w-10 h-10 bg-white/80 dark:bg-slate-800 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 transition-all duration-300 shadow-md animate-pulse hover:animate-none"
-                  >
-                    <Settings className="h-5 w-5 text-blue-700 dark:text-blue-400" />
-                    <span className="sr-only">Configurações</span>
-                  </Button>
-                  <ThemeToggle />
-                </div>
-                
                 <div className="flex flex-col items-center justify-center space-y-6 md:space-y-8 text-center">
                   <div className="animate-fade-in w-full">
                     <h1 className="text-2xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-400 dark:to-blue-200 bg-clip-text text-transparent animate-pulse">
@@ -605,3 +593,183 @@ const Index = () => {
                               <Label htmlFor="phone" className="text-blue-700 dark:text-blue-300 font-medium flex items-center gap-1 text-sm">
                                 <Phone size={14} className="animate-pulse" /> Telefone (opcional)
                               </Label>
+                              <Input
+                                id="phone"
+                                name="phone"
+                                placeholder="Ex: (82) 99999-9999"
+                                value={businessInfo.phone}
+                                onChange={handleInputChange}
+                                className="border-blue-200 dark:border-blue-800 focus:ring-blue-500 text-sm md:h-12"
+                              />
+                            </div>
+                          </div>
+                        </TabsContent>
+
+                        <TabsContent value="tone-format" className="space-y-4 animate-fade-in">
+                          <div className="bg-white/40 dark:bg-slate-800/40 p-4 rounded-lg">
+                            <div className="space-y-2 mb-4">
+                              <Label className="text-blue-700 dark:text-blue-300 font-medium flex items-center gap-1 text-sm">
+                                <Sparkles size={14} className="animate-pulse" /> Tom da mensagem
+                              </Label>
+                              <Select 
+                                value={tone} 
+                                onValueChange={(value) => handleSelectChange("tone", value)}
+                              >
+                                <SelectTrigger className="border-blue-200 dark:border-blue-800 focus:ring-blue-500 md:h-12">
+                                  <SelectValue placeholder="Selecione o tom da mensagem" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="friendly">Amigável e Conversacional</SelectItem>
+                                  <SelectItem value="promotional">Promocional e Chamativo</SelectItem>
+                                  <SelectItem value="professional">Profissional e Informativo</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            
+                            <div className="space-y-2">
+                              <Label className="text-blue-700 dark:text-blue-300 font-medium flex items-center gap-1 text-sm">
+                                <Globe size={14} className="animate-pulse" /> Idioma
+                              </Label>
+                              <Select 
+                                value={language} 
+                                onValueChange={(value) => handleSelectChange("language", value)}
+                              >
+                                <SelectTrigger className="border-blue-200 dark:border-blue-800 focus:ring-blue-500 md:h-12">
+                                  <SelectValue placeholder="Selecione o idioma" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="pt-BR">Português (Brasil)</SelectItem>
+                                  <SelectItem value="en-US">English (US)</SelectItem>
+                                  <SelectItem value="es-ES">Español</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+
+                          <PalavrasChaveDestaque categoria={businessInfo.category} />
+                          
+                          <div className="flex justify-center mt-8">
+                            <Button
+                              size="lg"
+                              className="w-full max-w-md bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 text-white font-semibold py-6 rounded-xl shadow-xl hover:shadow-2xl transition-all duration-300 flex items-center justify-center gap-2 text-base"
+                              onClick={handleGeneratePosts}
+                              disabled={loading || cooldownTime > 0 || !businessInfo.name || !businessInfo.category || !businessInfo.address}
+                            >
+                              {loading ? (
+                                <>
+                                  <Loader2 className="h-5 w-5 animate-spin" />
+                                  Gerando posts...
+                                </>
+                              ) : cooldownTime > 0 ? (
+                                <>
+                                  <Clock className="h-5 w-5" />
+                                  Aguarde <CountdownTimer seconds={Math.ceil(cooldownTime / 1000)} />
+                                </>
+                              ) : (
+                                <>
+                                  <Sparkles className="h-5 w-5" />
+                                  Gerar Posts GMB
+                                </>
+                              )}
+                            </Button>
+                          </div>
+                        </TabsContent>
+                      </Tabs>
+                    </CardContent>
+                  </Card>
+
+                  {generatedPosts.length > 0 && (
+                    <div className="w-full space-y-8 mt-8 mb-16">
+                      <div className="bg-gradient-to-r from-blue-200/50 via-blue-300/30 to-blue-200/50 dark:from-blue-900/30 dark:via-blue-800/20 dark:to-blue-900/30 py-2 px-4 rounded-full mx-auto max-w-fit text-blue-800 dark:text-blue-200 flex items-center justify-center gap-2 shadow-inner">
+                        <MessageSquare size={16} />
+                        <span className="text-sm font-medium">Posts Gerados</span>
+                      </div>
+                      
+                      <div className="grid grid-cols-1 gap-8">
+                        {generatedPosts.map((post, index) => (
+                          <div key={index} className="relative group transition-all duration-300">
+                            <GMBPostPreview
+                              post={post}
+                              nomeEmpresa={businessInfo.name}
+                              categoria={businessInfo.category}
+                              visualizacao={visualizacao}
+                              endereco={businessInfo.address}
+                            />
+                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                              <Button 
+                                size="sm" 
+                                variant="outline"
+                                className="bg-white/80 dark:bg-slate-800/80 rounded-full w-8 h-8 p-0 shadow-lg"
+                                onClick={() => copyToClipboard(post)}
+                              >
+                                <Copy size={14} className="text-blue-700 dark:text-blue-300" />
+                                <span className="sr-only">Copiar</span>
+                              </Button>
+                            </div>
+                            <div className="flex justify-center mt-3 gap-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs"
+                                onClick={() => setVisualizacao(visualizacao === "desktop" ? "mobile" : "desktop")}
+                              >
+                                Visualizar como {visualizacao === "desktop" ? "Mobile" : "Desktop"}
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs"
+                                onClick={() => copyToClipboard(post)}
+                              >
+                                <Copy size={14} className="mr-1" /> Copiar
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {!loading && generatedPosts.length === 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4 max-w-4xl mx-auto">
+                      {DICAS.map((dica, index) => (
+                        <Dica
+                          key={index}
+                          icon={dica.icon}
+                          title={dica.title}
+                          colorClass={dica.color}
+                          delay={index * 150}
+                        >
+                          {dica.text}
+                        </Dica>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </TabsContent>
+          
+          <TabsContent value="desc">
+            <GMBDescriptionGenerator businessInfo={businessInfo} language={language} />
+          </TabsContent>
+          
+          <TabsContent value="review">
+            <GMBReviewReplyGenerator businessInfo={businessInfo} language={language} />
+          </TabsContent>
+          
+          <TabsContent value="qa">
+            <GMBQAGenerator businessInfo={businessInfo} language={language} />
+          </TabsContent>
+        </Tabs>
+      </div>
+      
+      <SettingsModal
+        open={settingsOpen}
+        setOpen={setSettingsOpen}
+      />
+    </div>
+  );
+};
+
+export default Index;
