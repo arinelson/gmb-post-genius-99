@@ -107,6 +107,7 @@ const SettingsModal = ({ open, onOpenChange }: SettingsModalProps) => {
                   <li>O Google oferece créditos gratuitos para uso inicial</li>
                   <li>Verifique a política de preços para uso continuado</li>
                   <li>As chaves podem expirar e precisar de renovação</li>
+                  <li>O gerador usa o modelo "gemini-2.0-flash-thinking-exp-01-21" para melhores resultados</li>
                 </ul>
               </div>
             </div>

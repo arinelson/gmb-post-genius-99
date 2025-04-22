@@ -104,7 +104,7 @@ const Index = () => {
             variant="ghost"
             size="icon"
             onClick={() => setSettingsOpen(true)}
-            className="rounded-full w-10 h-10 bg-white/80 dark:bg-slate-800 border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 transition-all"
+            className="rounded-full w-10 h-10 bg-white/80 dark:bg-slate-800 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 transition-all shadow-md animate-pulse"
           >
             <Settings className="h-5 w-5 text-blue-700 dark:text-blue-400" />
             <span className="sr-only">Configurações</span>
