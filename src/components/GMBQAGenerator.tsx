@@ -31,17 +31,20 @@ Idioma: ${language}
           "Pergunta: Aceitam cartão de crédito?\nResposta: Sim, aceitamos todas as principais bandeiras.",
         ];
       } else {
-        const posts = await generatePostsWithGemini("qa", businessInfo, "default", language, prompt);
+        const posts = await generatePostsWithGemini("qa", businessInfo, "default", language);
         if (Array.isArray(posts)) {
           result = posts;
         } else if (typeof posts === "string") {
           // Se veio string, parse em linhas
           result = posts.split(/\n\s*\n/);
+        } else {
+          // Fallback case if posts is neither array nor string
+          result = ["Não foi possível gerar perguntas e respostas."];
         }
       }
       setQuestions(result);
       toast({ title: "Q&A Gerada!", description: "Veja exemplos gerados abaixo, edite se quiser." });
-    } catch {
+    } catch (error) {
       toast({ title: "Erro", description: "Não foi possível gerar Q&A.", variant: "destructive" });
     } finally {
       setLoading(false);

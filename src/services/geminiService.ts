@@ -1,4 +1,3 @@
-
 interface BusinessInfo {
   name: string;
   category: string;
@@ -12,8 +11,9 @@ export const generatePostsWithGemini = async (
   postType: string,
   businessInfo: BusinessInfo,
   tone: string,
-  language: string
-): Promise<string[]> => {
+  language: string,
+  customPrompt?: string
+): Promise<string[] | string> => {
   const apiKey = localStorage.getItem("geminiApiKey");
   
   if (!apiKey) {
@@ -35,8 +35,8 @@ export const generatePostsWithGemini = async (
     postTypeLabel = postType === "update" ? "actualizaciones" : postType === "offer" ? "ofertas" : "eventos";
   }
 
-  // Improved Prompt
-  const prompt = `
+  // Use custom prompt if provided, otherwise build default prompt
+  const prompt = customPrompt || `
     You are a professional Google My Business content creator. 
     Create 3 unique Google My Business posts for a business with these details:
     - Business Name: ${businessInfo.name}
@@ -124,7 +124,7 @@ export const getMockPosts = (
   businessInfo: BusinessInfo, 
   tone: string,
   language: string
-) => {
+): string[] => {
   const { name, category, address } = businessInfo;
   
   if (language === "en-US") {

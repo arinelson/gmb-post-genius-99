@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, FileText } from "lucide-react";
-import { generatePostsWithGemini, getMockPosts } from "@/services/geminiService";
+import { generatePostsWithGemini } from "@/services/geminiService";
 
 const buildPrompt = (businessInfo: any, language: string) => {
   // Prompt bem otimizado para descrição do GMB
@@ -35,7 +35,7 @@ export default function GMBDescriptionGenerator({ businessInfo, language }: { bu
       if (!apiKey) {
         result = "Mercadinho Bela Vista é referência em produtos frescos, bom atendimento e ótimos preços em Maceió. Venha conferir nossas ofertas semanais!";
       } else {
-        const posts = await generatePostsWithGemini("description", businessInfo, "default", language, prompt);
+        const posts = await generatePostsWithGemini("description", businessInfo, "default", language);
         result = Array.isArray(posts) ? posts[0] : posts;
       }
       setDesc(result);

@@ -42,12 +42,12 @@ Empresa: ${businessInfo.name}, Categoria: ${businessInfo.category}, Endereço: $
           result = "Obrigado pelo seu comentário! Em caso de dúvidas específicas, responderemos diretamente por telefone.";
         }
       } else {
-        const posts = await generatePostsWithGemini("review-reply", { ...businessInfo, review }, "default", language, prompt);
+        const posts = await generatePostsWithGemini("review-reply", businessInfo, "default", language);
         result = Array.isArray(posts) ? posts[0] : posts;
       }
       setReply(result);
       toast({ title: "Resposta Gerada!", description: "Confira, edite se quiser e copie para o GMB." });
-    } catch {
+    } catch (error) {
       toast({ title: "Erro", description: "Não foi possível gerar a resposta.", variant: "destructive" });
     } finally {
       setLoading(false);

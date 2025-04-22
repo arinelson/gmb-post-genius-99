@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -10,7 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Copy, MessageSquare, Tag, Calendar, Info, Clock,
-  MapPin, Globe, Phone, ImageIcon, Loader2, Settings, MessageCircle, Star, Share2, Check, Instagram, Sparkles, HelpCircle
+  MapPin, Globe, Phone, ImageIcon, Loader2, Settings, MessageCircle, Star, Share2, Check, Instagram, Sparkles,
+  FileText, HelpCircle
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -358,7 +358,6 @@ const Index = () => {
   const rateLimit = rateLimiter.canGeneratePosts();
   const dailyPostsRemaining = rateLimit.dailyRemaining !== undefined ? rateLimit.dailyRemaining : 30;
 
-  // ATENÇÃO: Layout centralizado com campos do negócio PRIMEIRO, e abaixo as abas dos geradores
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-blue-950 dark:to-slate-900 transition-colors duration-500" style={{ fontFamily: "'Inter', 'Segoe UI', 'Helvetica Neue', Arial, 'sans-serif'" }}>
       <div className="container px-2 py-4 md:py-10">
@@ -387,7 +386,6 @@ const Index = () => {
             </CardDescription>
           </CardHeader>
           <CardContent className="p-4 md:p-6">
-            {/* Campos compartilhados do negócio */}
             <form className="space-y-3">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -455,7 +453,6 @@ const Index = () => {
           </CardContent>
         </Card>
 
-        {/* Abas de seleção dos geradores */}
         <Tabs defaultValue="posts" className="w-full max-w-4xl mx-auto animate-fade-in delay-300">
           <TabsList className="grid grid-cols-4 gap-1 mb-4 w-full overflow-x-auto">
             <TabsTrigger value="posts" className="flex items-center justify-center gap-2">
@@ -766,7 +763,6 @@ const Index = () => {
       
       <SettingsModal
         open={settingsOpen}
-        setOpen={setSettingsOpen}
       />
     </div>
   );
