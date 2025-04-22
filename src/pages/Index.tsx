@@ -10,13 +10,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { 
   Copy, Sparkles, MessageSquare, Tag, Calendar, Info, Clock, 
   MapPin, Globe, Phone, ImageIcon, Loader2, Settings, MessageCircle,
-  LightbulbIcon, Star, Share2, Check
+  LightbulbIcon, Star, Share2, Check, Instagram
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import SettingsModal from "@/components/SettingsModal";
 import { generatePostsWithGemini, getMockPosts } from "@/services/geminiService";
-import { Instagram } from 'lucide-react';
+import CountdownTimer from "@/components/CountdownTimer";
+import { useRateLimiter } from "@/services/rateLimiterService";
 
 function gerarPalavrasChave(categoria: string) {
   if (!categoria) return [];
@@ -127,7 +128,9 @@ const Index = () => {
   const [generatedPosts, setGeneratedPosts] = useState<string[]>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [visualizacao, setVisualizacao] = useState<"desktop" | "mobile">("desktop");
+  const [cooldownTime, setCooldownTime] = useState(0);
   const isMobile = useIsMobile();
+  const rateLimiter = useRateLimiter();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -144,7 +147,40 @@ const Index = () => {
     }
   };
 
+  const updateCooldown = () => {
+    const { cooldown } = rateLimiter.getRemainingTime();
+    setCooldownTime(cooldown);
+  };
+
+  useEffect(() => {
+    updateCooldown();
+    const interval = setInterval(updateCooldown, 1000);
+    return () => clearInterval(interval);
+  }, []);
+
   const handleGeneratePosts = async () => {
+    const rateLimit = rateLimiter.canGeneratePosts();
+    
+    if (!rateLimit.allowed) {
+      if (rateLimit.dailyRemaining !== undefined && rateLimit.dailyRemaining <= 0) {
+        toast({
+          title: "Limite diário atingido",
+          description: "Você atingiu o limite de 30 posts diários. Tente novamente amanhã.",
+          variant: "destructive",
+        });
+        return;
+      }
+      
+      if (rateLimit.remainingTime) {
+        setCooldownTime(rateLimit.remainingTime);
+        toast({
+          title: "Aguarde um momento",
+          description: `Por favor, aguarde ${Math.ceil(rateLimit.remainingTime / 1000)} segundos antes de gerar novos posts.`,
+        });
+        return;
+      }
+    }
+    
     setLoading(true);
     try {
       const apiKey = localStorage.getItem("geminiApiKey");
@@ -154,6 +190,8 @@ const Index = () => {
           const mockPosts = getMockPosts(postType, businessInfo, tone, language);
           setGeneratedPosts(mockPosts);
           setLoading(false);
+          rateLimiter.recordGeneration();
+          updateCooldown();
           toast({
             title: "Posts gerados com dados de exemplo",
             description: "Para obter posts personalizados, configure sua API key nas configurações.",
@@ -164,6 +202,8 @@ const Index = () => {
 
       const posts = await generatePostsWithGemini(postType, businessInfo, tone, language);
       setGeneratedPosts(posts);
+      rateLimiter.recordGeneration();
+      updateCooldown();
       toast({
         title: "Posts gerados com sucesso!",
         description: "Confira as sugestões abaixo e escolha a que mais combina com seu negócio.",
@@ -191,15 +231,18 @@ const Index = () => {
     });
   };
 
+  const rateLimit = rateLimiter.canGeneratePosts();
+  const dailyPostsRemaining = rateLimit.dailyRemaining !== undefined ? rateLimit.dailyRemaining : 30;
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-blue-950 dark:to-slate-900 transition-colors duration-300">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-white dark:from-blue-950 dark:to-slate-900 transition-colors duration-500">
       <div className="container px-4 py-6 md:py-10">
         <div className="flex justify-between mb-4">
           <Button
             variant="ghost"
             size="icon"
             onClick={() => setSettingsOpen(true)}
-            className="rounded-full w-10 h-10 bg-white/80 dark:bg-slate-800 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 transition-all shadow-md animate-pulse"
+            className="rounded-full w-10 h-10 bg-white/80 dark:bg-slate-800 border border-blue-200 dark:border-blue-800 hover:bg-blue-100 dark:hover:bg-blue-900 transition-all duration-300 shadow-md animate-pulse hover:animate-none"
           >
             <Settings className="h-5 w-5 text-blue-700 dark:text-blue-400" />
             <span className="sr-only">Configurações</span>
@@ -212,12 +255,12 @@ const Index = () => {
             <h1 className="text-2xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-400 dark:to-blue-200 bg-clip-text text-transparent animate-pulse">
               GMB Post Generator
             </h1>
-            <p className="text-sm md:text-lg text-blue-700 dark:text-blue-300 mt-2 animate-fade-in delay-200 px-2">
+            <p className="text-sm md:text-lg text-blue-700 dark:text-blue-300 mt-2 animate-fade-in delay-200 px-2 font-light tracking-wide">
               Gere posts personalizados para o Google Meu Negócio em segundos
             </p>
           </div>
 
-          <Card className="w-full max-w-4xl gradient-card animate-fade-in delay-300 shadow-lg dark:border-blue-800 dark:bg-slate-900/80">
+          <Card className="w-full max-w-4xl gradient-card animate-fade-in delay-300 shadow-lg dark:border-blue-800 dark:bg-slate-900/80 transform transition-all duration-300 hover:shadow-xl">
             <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-700 dark:to-blue-900 text-white rounded-t-lg p-4 md:p-6">
               <CardTitle className="text-xl md:text-2xl flex items-center justify-center gap-2 animate-float">
                 <Sparkles size={isMobile ? 20 : 24} className="animate-pulse text-yellow-200" />
@@ -227,17 +270,22 @@ const Index = () => {
               <CardDescription className="text-blue-100 text-sm md:text-base">
                 Preencha as informações abaixo para gerar posts personalizados
               </CardDescription>
+              <div className="mt-2 text-xs font-medium text-blue-100">
+                <span className="bg-blue-800/50 px-2 py-1 rounded-full inline-flex items-center gap-1 shadow-inner">
+                  <Clock size={12} /> Restantes hoje: <span className="font-bold">{dailyPostsRemaining}</span> posts
+                </span>
+              </div>
             </CardHeader>
             <CardContent className="p-4 md:p-6 dark:bg-slate-900/80">
               <Tabs defaultValue="post-type" className="w-full">
                 <TabsList className="grid grid-cols-3 gap-2 mb-6 md:mb-8 w-full overflow-x-auto md:overflow-visible">
-                  <TabsTrigger value="post-type" className="flex items-center justify-center gap-1 text-xs md:text-sm py-2 md:py-3 px-1 md:px-3">
+                  <TabsTrigger value="post-type" className="flex items-center justify-center gap-1 text-xs md:text-sm py-2 md:py-3 px-1 md:px-3 transition-all duration-300 data-[state=active]:shadow-md">
                     <MessageSquare size={isMobile ? 14 : 18} /> <span className={isMobile ? "ml-1" : "ml-2"}>Tipo de Post</span>
                   </TabsTrigger>
-                  <TabsTrigger value="business-info" className="flex items-center justify-center gap-1 text-xs md:text-sm py-2 md:py-3 px-1 md:px-3">
+                  <TabsTrigger value="business-info" className="flex items-center justify-center gap-1 text-xs md:text-sm py-2 md:py-3 px-1 md:px-3 transition-all duration-300 data-[state=active]:shadow-md">
                     <Info size={isMobile ? 14 : 18} /> <span className={isMobile ? "ml-1" : "ml-2"}>Informações</span>
                   </TabsTrigger>
-                  <TabsTrigger value="tone-format" className="flex items-center justify-center gap-1 text-xs md:text-sm py-2 md:py-3 px-1 md:px-3">
+                  <TabsTrigger value="tone-format" className="flex items-center justify-center gap-1 text-xs md:text-sm py-2 md:py-3 px-1 md:px-3 transition-all duration-300 data-[state=active]:shadow-md">
                     <Sparkles size={isMobile ? 14 : 18} /> <span className={isMobile ? "ml-1" : "ml-2"}>Tom e Formato</span>
                   </TabsTrigger>
                 </TabsList>
@@ -406,8 +454,8 @@ const Index = () => {
               <div className="mt-6 md:mt-8">
                 <Button 
                   onClick={handleGeneratePosts} 
-                  disabled={loading || !businessInfo.name || !businessInfo.category || !businessInfo.address}
-                  className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 dark:from-blue-500 dark:to-indigo-600 dark:hover:from-blue-400 dark:hover:to-indigo-500 transition-all text-white font-medium py-6 rounded-lg shadow-lg hover:shadow-xl dark:shadow-blue-500/20 relative overflow-hidden group"
+                  disabled={loading || !businessInfo.name || !businessInfo.category || !businessInfo.address || cooldownTime > 0}
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 dark:from-blue-500 dark:to-indigo-600 dark:hover:from-blue-400 dark:hover:to-indigo-500 transition-all duration-300 text-white font-medium py-6 rounded-lg shadow-lg hover:shadow-xl dark:shadow-blue-500/20 relative overflow-hidden group transform hover:translate-y-[-2px]"
                 >
                   <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
                   
@@ -415,6 +463,15 @@ const Index = () => {
                     <div className="flex items-center justify-center space-x-2">
                       <Loader2 className="h-5 w-5 animate-spin" />
                       <span>Gerando Posts...</span>
+                    </div>
+                  ) : cooldownTime > 0 ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <CountdownTimer 
+                        milliseconds={cooldownTime} 
+                        onComplete={() => setCooldownTime(0)}
+                        className="text-white"
+                      />
+                      <span>até poder gerar novamente</span>
                     </div>
                   ) : (
                     <div className="flex items-center justify-center space-x-2">
@@ -497,55 +554,63 @@ const Index = () => {
             </Card>
           )}
 
-          <Card className="w-full max-w-4xl animate-fade-in delay-500 gradient-card shadow-lg dark:border-blue-800 dark:bg-slate-900/80 glass-effect">
+          <Card className="w-full max-w-4xl animate-fade-in delay-500 shadow-lg dark:border-blue-800 dark:bg-slate-900/80 glass-effect overflow-hidden">
             <CardHeader className="bg-gradient-to-r from-blue-400 to-blue-700 dark:from-indigo-700 dark:to-blue-900 text-white rounded-t-lg p-4 md:p-6">
               <CardTitle className="text-xl md:text-2xl flex items-center justify-center gap-2 animate-float">
                 <Sparkles size={isMobile ? 20 : 24} className="animate-pulse text-yellow-200" />
-                <span className="tracking-wide">Dicas & Recomendações</span>
+                <span className="tracking-wide font-semibold">Dicas & Recomendações</span>
                 <Sparkles size={isMobile ? 20 : 24} className="animate-pulse text-yellow-200" />
               </CardTitle>
               <CardDescription className="text-blue-100 text-sm md:text-base opacity-90">
                 Maximize o impacto dos seus posts no Google Meu Negócio com estas sugestões práticas
               </CardDescription>
             </CardHeader>
-            <CardContent className="p-0 md:p-2 dark:bg-slate-900/80">
+            <CardContent className="p-0 md:p-2 dark:bg-slate-900/80 backdrop-blur-sm">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-6 py-4 px-2">
-                <div className="bg-gradient-to-br from-blue-100/80 to-white/80 dark:from-blue-900/40 dark:to-slate-800/70 backdrop-blur-md border border-blue-100 dark:border-blue-800 p-4 rounded-2xl shadow-md hover:shadow-xl transition hover:scale-105 flex flex-col gap-2 animate-fade-in">
+                <div className="bg-gradient-to-br from-blue-100/80 to-white/80 dark:from-blue-900/40 dark:to-slate-800/70 backdrop-blur-md border border-blue-100 dark:border-blue-800/50 p-4 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 flex flex-col gap-2 animate-fade-in transform hover:translate-y-[-2px]">
                   <div className="flex items-center gap-2">
-                    <LightbulbIcon size={18} className="text-blue-500 animate-pulse" />
+                    <div className="bg-blue-500/20 dark:bg-blue-500/30 p-2 rounded-full">
+                      <LightbulbIcon size={18} className="text-blue-600 dark:text-blue-300 animate-pulse" />
+                    </div>
                     <span className="font-bold text-blue-800 dark:text-blue-100 text-sm">Use Palavras-chave Locais</span>
                   </div>
                   <div className="text-xs md:text-sm text-blue-600 dark:text-blue-400 opacity-90 pl-6 flex gap-1 items-center">
                     <span>
                       Inclua <span className="font-semibold underline decoration-blue-400">nomes de bairros, cidades ou regiões</span> para impulsionar as buscas locais e atrair quem está por perto.
                     </span>
-                    <Star size={14} className="ml-1 text-yellow-400" />
+                    <Star size={14} className="ml-1 text-yellow-400 animate-pulse" />
                   </div>
                 </div>
-                <div className="bg-gradient-to-br from-green-50/70 to-white/80 dark:from-blue-900/40 dark:to-slate-800/70 backdrop-blur-md border border-green-200 dark:border-blue-800 p-4 rounded-2xl shadow-md hover:shadow-xl transition hover:scale-105 flex flex-col gap-2 animate-fade-in delay-100">
+                <div className="bg-gradient-to-br from-green-50/70 to-white/80 dark:from-blue-900/40 dark:to-slate-800/70 backdrop-blur-md border border-green-200 dark:border-blue-800/50 p-4 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 flex flex-col gap-2 animate-fade-in delay-100 transform hover:translate-y-[-2px]">
                   <div className="flex items-center gap-2">
-                    <MessageSquare size={18} className="text-green-700 dark:text-green-300 animate-fade-in" />
+                    <div className="bg-green-500/20 dark:bg-green-500/30 p-2 rounded-full">
+                      <MessageSquare size={18} className="text-green-700 dark:text-green-300 animate-fade-in" />
+                    </div>
                     <span className="font-bold text-green-900 dark:text-green-200 text-sm">Incentive Interações</span>
                   </div>
                   <div className="text-xs md:text-sm text-green-900 dark:text-green-200 opacity-90 pl-6 flex gap-1 items-center">
                     <span>
                       Adicione <span className="font-semibold underline decoration-green-400">chamadas para ação (CTAs)</span> claras como "Reserve já!" ou "Fale conosco", tornando a comunicação mais engajadora.
                     </span>
-                    <Share2 size={14} className="ml-1 text-green-500" />
+                    <Share2 size={14} className="ml-1 text-green-500 animate-pulse" />
                   </div>
                 </div>
-                <div className="bg-gradient-to-br from-yellow-100/90 to-white/80 dark:from-blue-900/40 dark:to-slate-800/70 backdrop-blur-md border border-yellow-200 dark:border-blue-800 p-4 rounded-2xl shadow-md hover:shadow-xl transition hover:scale-105 flex flex-col gap-2 animate-fade-in delay-200">
+                <div className="bg-gradient-to-br from-yellow-100/90 to-white/80 dark:from-blue-900/40 dark:to-slate-800/70 backdrop-blur-md border border-yellow-200 dark:border-blue-800/50 p-4 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 flex flex-col gap-2 animate-fade-in delay-200 transform hover:translate-y-[-2px]">
                   <div className="flex items-center gap-2">
-                    <ImageIcon size={18} className="text-yellow-500" />
+                    <div className="bg-yellow-500/20 dark:bg-yellow-500/30 p-2 rounded-full">
+                      <ImageIcon size={18} className="text-yellow-600 dark:text-yellow-300 animate-pulse" />
+                    </div>
                     <span className="font-bold text-yellow-700 dark:text-yellow-300 text-sm">Adicione Conteúdo Visual</span>
                   </div>
                   <div className="text-xs md:text-sm text-yellow-900 dark:text-yellow-100 opacity-90 pl-6">
                     Imagens e vídeos de qualidade <span className="font-semibold">chamam atenção</span> e geram mais confiança, tornando seu perfil mais atrativo e profissional.
                   </div>
                 </div>
-                <div className="bg-gradient-to-br from-purple-100/90 to-white/80 dark:from-blue-900/40 dark:to-slate-800/70 backdrop-blur-md border border-purple-200 dark:border-blue-800 p-4 rounded-2xl shadow-md hover:shadow-xl transition hover:scale-105 flex flex-col gap-2 animate-fade-in delay-300">
+                <div className="bg-gradient-to-br from-purple-100/90 to-white/80 dark:from-blue-900/40 dark:to-slate-800/70 backdrop-blur-md border border-purple-200 dark:border-blue-800/50 p-4 rounded-2xl shadow-md hover:shadow-xl transition-all duration-300 hover:scale-105 flex flex-col gap-2 animate-fade-in delay-300 transform hover:translate-y-[-2px]">
                   <div className="flex items-center gap-2">
-                    <Check size={18} className="text-purple-600 dark:text-purple-300" />
+                    <div className="bg-purple-500/20 dark:bg-purple-500/30 p-2 rounded-full">
+                      <Check size={18} className="text-purple-600 dark:text-purple-300 animate-pulse" />
+                    </div>
                     <span className="font-bold text-purple-800 dark:text-purple-100 text-sm">Monitore e Responda</span>
                   </div>
                   <div className="text-xs md:text-sm text-purple-900 dark:text-purple-100 opacity-90 pl-6">

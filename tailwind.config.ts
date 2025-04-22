@@ -19,6 +19,9 @@ export default {
 			}
 		},
 		extend: {
+			fontFamily: {
+				sans: ['Inter', 'sans-serif'],
+			},
 			colors: {
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
@@ -96,10 +99,50 @@ export default {
 				},
 				float: {
 					'0%, 100%': {
-						transform: 'translateY(0)'
+						transform: 'translateY(0px)'
 					},
 					'50%': {
 						transform: 'translateY(-10px)'
+					}
+				},
+				pulse: {
+					'0%, 100%': {
+						opacity: '1'
+					},
+					'50%': {
+						opacity: '0.7'
+					}
+				},
+				fadeIn: {
+					from: { 
+						opacity: '0',
+						transform: 'translateY(10px)' 
+					},
+					to: { 
+						opacity: '1',
+						transform: 'translateY(0)' 
+					}
+				},
+				pop: {
+					'0%': { 
+						transform: 'scale(0.95)',
+						opacity: '0.8' 
+					},
+					'50%': { 
+						transform: 'scale(1.02)',
+						opacity: '1' 
+					},
+					'100%': { 
+						transform: 'scale(1)',
+						opacity: '1' 
+					}
+				},
+				glow: {
+					'0%, 100%': { 
+						boxShadow: '0 0 5px rgba(66, 133, 244, 0.5)' 
+					},
+					'50%': { 
+						boxShadow: '0 0 20px rgba(66, 133, 244, 0.7), 0 0 30px rgba(66, 133, 244, 0.4)' 
 					}
 				}
 			},
@@ -107,8 +150,16 @@ export default {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
 				'shimmer': 'shimmer 2s infinite',
-				'float': 'float 3s ease-in-out infinite'
-			}
+				'float': 'float 3s ease-in-out infinite',
+				'pulse': 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+				'fade-in': 'fadeIn 0.8s ease-out forwards',
+				'pop': 'pop 0.4s ease-out forwards',
+				'glow': 'glow 2s infinite'
+			},
+			transitionDuration: {
+				'2000': '2000ms',
+        '3000': '3000ms',
+      }
 		}
 	},
 	plugins: [require("tailwindcss-animate")],
