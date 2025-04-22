@@ -15,6 +15,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import SettingsModal from "@/components/SettingsModal";
 import { generatePostsWithGemini, getMockPosts } from "@/services/geminiService";
+import { Instagram } from 'lucide-react';
 
 const Index = () => {
   const { toast } = useToast();
@@ -425,6 +426,21 @@ const Index = () => {
       </div>
       
       <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
+
+      <footer className="text-center py-4 mt-8 bg-blue-50 dark:bg-slate-900 border-t border-blue-100 dark:border-slate-800">
+        <p className="text-sm text-blue-700 dark:text-blue-300">
+          Idealizado por{' '}
+          <a 
+            href="https://www.instagram.com/arinelsonsantos" 
+            target="_blank" 
+            rel="noopener noreferrer" 
+            className="font-semibold hover:text-blue-900 dark:hover:text-blue-200 transition-colors flex items-center justify-center gap-1"
+          >
+            Arinelson Santos
+            <Instagram size={16} className="inline-block" />
+          </a>
+        </p>
+      </footer>
     </div>
   );
 };
