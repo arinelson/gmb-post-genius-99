@@ -9,13 +9,112 @@ import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import { 
   Copy, Sparkles, MessageSquare, Tag, Calendar, Info, Clock, 
-  MapPin, Globe, Phone, ImageIcon, Loader2, Settings
+  MapPin, Globe, Phone, ImageIcon, Loader2, Settings, Whatsapp
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import SettingsModal from "@/components/SettingsModal";
 import { generatePostsWithGemini, getMockPosts } from "@/services/geminiService";
 import { Instagram } from 'lucide-react';
+
+// Gerador simples de palavras-chave baseado no nicho/categoria
+function gerarPalavrasChave(categoria: string) {
+  if (!categoria) return [];
+  const termos = categoria.toLowerCase();
+  if (termos.includes("supermercado")) {
+    return [
+      { termo: "supermercado", motivo: "Aumenta a relevância local nas buscas sobre mercados." },
+      { termo: "produtos frescos", motivo: "Valoriza alimentos frescos, muito buscados no setor." },
+      { termo: "ofertas", motivo: "Atrai público que busca promoções." },
+    ];
+  }
+  if (termos.includes("restaurante")) {
+    return [
+      { termo: "restaurante", motivo: "Aparece em buscas gerais de comida fora." },
+      { termo: "delivery", motivo: "Foco no serviço de entrega, aumenta visibilidade no Google." },
+      { termo: "almoço", motivo: "Busca muito comum para refeições rápidas." },
+    ];
+  }
+  return [
+    { termo: categoria, motivo: "Termo exato para buscas diretas do nicho." },
+    { termo: "melhor da região", motivo: "Expressão genérica, mas muito buscada em avaliações." },
+  ];
+}
+
+// Componente visualização do post (Preview GMB)
+function GMBPostPreview({
+  post,
+  nomeEmpresa,
+  categoria,
+  visualizacao,
+  endereco,
+}: {
+  post: string;
+  nomeEmpresa: string;
+  categoria: string;
+  visualizacao: "desktop" | "mobile";
+  endereco: string;
+}) {
+  return (
+    <div
+      className={`rounded-lg shadow-lg border border-blue-300 dark:border-blue-800
+        mx-auto my-2 p-0 bg-gradient-to-br from-blue-100 to-white dark:from-blue-950 dark:to-slate-900
+        transition-all duration-300
+        ${visualizacao === "mobile" ? "max-w-[370px]" : "max-w-2xl"}
+        relative overflow-hidden`}
+      style={visualizacao === "mobile"
+        ? { minHeight: 370, borderRadius: 18, borderWidth: 2 }
+        : { minHeight: 200, borderRadius: 20 }
+      }
+    >
+      {/* Header do post (exemplo realista GMB) */}
+      <div className="flex items-center gap-3 px-4 pt-3 pb-1">
+        <div className="rounded-full bg-blue-700/90 dark:bg-blue-500/90 w-10 h-10 flex items-center justify-center text-white font-bold text-xl">
+          {nomeEmpresa ? nomeEmpresa[0] : <span>?</span>}
+        </div>
+        <div>
+          <div className="font-semibold text-blue-900 dark:text-blue-200 text-base">{nomeEmpresa || "Sua Empresa"}</div>
+          <div className="text-blue-700 dark:text-blue-300 text-xs">{categoria || "Categoria"}</div>
+        </div>
+      </div>
+      {/* Conteúdo do post */}
+      <div className="px-4 py-2 text-blue-900 dark:text-blue-100 text-sm whitespace-pre-wrap">
+        {post}
+      </div>
+      {/* Endereço e rodapé Google style */}
+      <div className="px-4 pb-3 pt-1 flex items-center gap-2 text-xs text-blue-800 dark:text-blue-300">
+        <span className="truncate"><strong>Local:</strong> {endereco || "Endereço da Empresa"}</span>
+      </div>
+      {/* Marca visual mobile */}
+      {visualizacao === "mobile" && (
+        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-500 to-blue-200 rounded-t-lg" />
+      )}
+    </div>
+  );
+}
+
+// Componente sugestões de palavras-chave
+function PalavrasChaveDestaque({ categoria }: { categoria: string }) {
+  const palavras = gerarPalavrasChave(categoria);
+  if (!palavras?.length) return null;
+  return (
+    <div className="my-4 bg-blue-50 dark:bg-slate-800/40 p-3 rounded-md border border-blue-200 dark:border-blue-700 shadow-inner">
+      <div className="font-semibold text-blue-900 dark:text-blue-100 mb-1 text-sm flex items-center gap-1">
+        🔑 Palavras-chave recomendadas para o seu nicho
+      </div>
+      <ul className="list-disc list-inside space-y-1 ml-2">
+        {palavras.map((kw, i) => (
+          <li key={i} className="text-blue-800 dark:text-blue-200 text-xs">
+            <span className="font-bold">{kw.termo}</span> — <span className="italic">{kw.motivo}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="text-xs mt-2 text-blue-700 dark:text-blue-300">
+        Use essas palavras no texto dos seus posts para ajudar seu negócio a ser encontrado mais facilmente no Google.
+      </div>
+    </div>
+  );
+}
 
 const Index = () => {
   const { toast } = useToast();
@@ -33,6 +132,7 @@ const Index = () => {
   const [language, setLanguage] = useState("pt-BR");
   const [generatedPosts, setGeneratedPosts] = useState<string[]>([]);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [visualizacao, setVisualizacao] = useState<"desktop" | "mobile">("desktop");
   const isMobile = useIsMobile();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -344,14 +444,39 @@ const Index = () => {
                 <CardDescription className="text-blue-100 text-sm md:text-base">
                   Escolha uma das opções abaixo ou use como inspiração para criar seu próprio post
                 </CardDescription>
+                {/* Opções visualização */}
+                <div className="mt-4 flex gap-3 justify-center">
+                  <Button
+                    variant={visualizacao === "desktop" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setVisualizacao("desktop")}
+                    className={visualizacao === "desktop" ? "bg-blue-800 text-white" : ""}
+                  >
+                    Desktop
+                  </Button>
+                  <Button
+                    variant={visualizacao === "mobile" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setVisualizacao("mobile")}
+                    className={visualizacao === "mobile" ? "bg-blue-500 text-white" : ""}
+                  >
+                    Mobile
+                  </Button>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4 md:space-y-6 p-4 md:p-6 dark:bg-slate-900/80">
+                <PalavrasChaveDestaque categoria={businessInfo.category} />
                 {generatedPosts.map((post, index) => (
                   <div key={index} className="border border-blue-200 dark:border-blue-800 p-3 md:p-4 rounded-md bg-white dark:bg-slate-800 shadow-md hover:shadow-lg transition-all animate-fade-in" style={{animationDelay: `${0.5 + index * 0.2}s`}}>
-                    <div className="flex justify-between items-center mb-2">
-                      <h3 className="font-semibold text-blue-700 dark:text-blue-300 flex items-center gap-1 text-sm md:text-base">
-                        <Sparkles size={14} className="animate-pulse" /> Sugestão {index + 1}
-                      </h3>
+                    {/* Visualização do post tipo Google Meu Negócio */}
+                    <GMBPostPreview
+                      post={post}
+                      nomeEmpresa={businessInfo.name}
+                      categoria={businessInfo.category}
+                      visualizacao={visualizacao}
+                      endereco={businessInfo.address}
+                    />
+                    <div className="flex justify-end gap-2 mt-3">
                       <Button 
                         variant="outline" 
                         size="sm" 
@@ -360,9 +485,20 @@ const Index = () => {
                       >
                         <Copy size={14} /> Copiar
                       </Button>
-                    </div>
-                    <div className="whitespace-pre-wrap bg-blue-50 dark:bg-blue-900/30 p-3 md:p-4 rounded text-left border-l-4 border-blue-500 text-blue-800 dark:text-blue-200 text-xs md:text-sm overflow-x-auto">
-                      {post}
+                      <Button
+                        variant="secondary"
+                        size="sm"
+                        className="flex items-center gap-1 h-8 px-2 md:px-3 bg-green-500 hover:bg-green-600 text-white"
+                        onClick={() => {
+                          // Abrir WhatsApp com texto do post
+                          const msg = encodeURIComponent(post);
+                          window.open(`https://wa.me/?text=${msg}`, "_blank");
+                        }}
+                        title="Compartilhar no WhatsApp"
+                      >
+                        <Whatsapp size={14} />
+                        <span className="sr-only md:not-sr-only">WhatsApp</span>
+                      </Button>
                     </div>
                   </div>
                 ))}
