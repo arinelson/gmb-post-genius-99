@@ -1,3 +1,4 @@
+
 interface BusinessInfo {
   name: string;
   category: string;
@@ -35,35 +36,22 @@ export const generatePostsWithGemini = async (
     postTypeLabel = postType === "update" ? "actualizaciones" : postType === "offer" ? "ofertas" : "eventos";
   }
 
-  // Use custom prompt if provided, otherwise build default prompt
-  const prompt = customPrompt || `
-    You are a professional Google My Business content creator. 
-    Create 3 unique Google My Business posts for a business with these details:
-    - Business Name: ${businessInfo.name}
-    - Category: ${businessInfo.category}
-    - Website: ${businessInfo.website || "N/A"}
-    - Address: ${businessInfo.address}
-    - Phone: ${businessInfo.phone || "N/A"}
-    - Hours: ${businessInfo.hours || "N/A"}
-    
-    Post Type: ${postTypeLabel} (${postType})
-    Tone: ${tone}
-    Language: ${languageLabel} (${language})
-
-    Each post must:
-    - Be concise (preferably under 1500 characters)
-    - Use a professional, natural, and approachable tone (avoid childish style)
-    - Include NO MORE THAN TWO hashtags (and only if they are relevant, not obligatory)
-    - LIMIT the use of emojis (max one per post, only if it adds value)
-    - Avoid repeating the same template or structure in every post
-    - Be suitable for local search optimization
-
-    Instructions:
-    - Format: plain text with appropriate line breaks.
-    - No titles, explanations, or numbering.
-    - Separate each post with three dashes (---).
-    - Do NOT include explanatory text or any output besides the posts themselves.
-  `;
+  // Different prompts based on content type
+  let prompt = "";
+  
+  if (postType === "description") {
+    prompt = buildDescriptionPrompt(businessInfo, language);
+  } else if (postType === "review-reply") {
+    prompt = buildReviewReplyPrompt(businessInfo, customPrompt || "", language);
+  } else if (postType === "qa") {
+    prompt = buildQAPrompt(businessInfo, language);
+  } else if (customPrompt) {
+    // Use custom prompt if provided
+    prompt = customPrompt;
+  } else {
+    // Default posts prompt
+    prompt = buildPostsPrompt(businessInfo, postTypeLabel, postType, tone, language);
+  }
 
   try {
     const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent", {
@@ -94,7 +82,7 @@ export const generatePostsWithGemini = async (
     if (!response.ok) {
       const errorData = await response.json();
       console.error("API Error:", errorData);
-      throw new Error(`Erro na API: ${errorData.error?.message || "Falha ao gerar posts"}`);
+      throw new Error(`Erro na API: ${errorData.error?.message || "Falha ao gerar conteúdo"}`);
     }
 
     const data = await response.json();
@@ -105,7 +93,17 @@ export const generatePostsWithGemini = async (
 
     const generatedText = data.candidates[0].content.parts[0].text;
     
-    // Split the response by the separator and clean up each post
+    // Para descrição e resposta de avaliação, retornar texto direto
+    if (postType === "description" || postType === "review-reply") {
+      return generatedText.trim();
+    }
+    
+    // Para Q&A, dividir por perguntas
+    if (postType === "qa") {
+      return parseQAContent(generatedText);
+    }
+    
+    // Para posts regulares, dividir por separador
     const posts = generatedText
       .split("---")
       .map(post => post.trim())
@@ -113,10 +111,254 @@ export const generatePostsWithGemini = async (
     
     return posts.length > 0 ? posts : ["Não foi possível gerar posts. Por favor, tente novamente."];
   } catch (error) {
-    console.error("Error generating posts:", error);
+    console.error("Error generating content:", error);
     throw error;
   }
 };
+
+// Construtor de prompt para descrição do GMB
+function buildDescriptionPrompt(businessInfo: BusinessInfo, language: string): string {
+  let audience = "";
+  let seoFocus = "";
+  let lengthLimit = "";
+  
+  // Adicionar variantes de idioma
+  if (language === "pt-BR") {
+    audience = "clientes locais brasileiros";
+    seoFocus = "foco em SEO local brasileiro";
+    lengthLimit = "limite de 750 caracteres";
+  } else if (language === "en-US") {
+    audience = "local US customers";
+    seoFocus = "focus on US local SEO";
+    lengthLimit = "limit of 750 characters";
+  } else if (language === "es-ES") {
+    audience = "clientes locales de habla hispana";
+    seoFocus = "enfoque en SEO local español";
+    lengthLimit = "límite de 750 caracteres";
+  }
+  
+  return `Crie uma descrição otimizada para o Google Meu Negócio para a seguinte empresa:
+
+INFORMAÇÕES DA EMPRESA:
+- Nome: ${businessInfo.name}
+- Categoria: ${businessInfo.category}
+- Endereço: ${businessInfo.address}
+- Site: ${businessInfo.website || "-"}
+- Telefone: ${businessInfo.phone || "-"}
+- Horário: ${businessInfo.hours || "-"}
+
+REQUISITOS DA DESCRIÇÃO:
+1. Atenda ${audience}
+2. Com ${seoFocus}
+3. Tenha exatamente um ${lengthLimit}
+4. Seja concisa e clara, usando tom profissional e amigável
+5. Inclua os diferenciais do negócio com base na categoria
+6. Destaque a localização e acessibilidade
+7. Tenha chamada para ação no final
+
+FORMATO: Texto contínuo sem marcadores, quebras de linha ou títulos. Não use aspas. Não ultrapasse 750 caracteres.
+
+IMPORTANTE: A descrição deve estar perfeitamente alinhada com as diretrizes do Google Meu Negócio, enfatizar credibilidade e qualidade, e usar palavras-chave naturalmente.`;
+}
+
+// Construtor de prompt para resposta de avaliações
+function buildReviewReplyPrompt(businessInfo: BusinessInfo, reviewText: string, language: string): string {
+  let toneGuidance = "";
+  let lengthGuidance = "";
+  
+  // Adicionar variantes de idioma
+  if (language === "pt-BR") {
+    toneGuidance = "tom profissional e cordial brasileiro";
+    lengthGuidance = "máximo de 300 caracteres";
+  } else if (language === "en-US") {
+    toneGuidance = "professional and cordial American tone";
+    lengthGuidance = "maximum of 300 characters";
+  } else if (language === "es-ES") {
+    toneGuidance = "tono profesional y cordial en español";
+    lengthGuidance = "máximo de 300 caracteres";
+  }
+  
+  return `Gere uma resposta otimizada para a seguinte avaliação do Google Meu Negócio:
+
+AVALIAÇÃO DO CLIENTE:
+"${reviewText}"
+
+INFORMAÇÕES DA EMPRESA:
+- Nome: ${businessInfo.name}
+- Categoria: ${businessInfo.category}
+- Endereço: ${businessInfo.address}
+
+DIRETRIZES PARA RESPOSTA:
+1. Use ${toneGuidance}
+2. Respeite ${lengthGuidance}
+3. Personalize com nome da empresa
+4. Se avaliação positiva (4-5 estrelas): agradeça sinceramente, mencione algo específico do comentário, convide para retornar
+5. Se avaliação negativa (1-3 estrelas): demonstre empatia, peça desculpas objetivamente sem admitir culpa, ofereça resolver offline, forneça contato direto
+6. Se avaliação neutra ou ambígua: agradeça, aborde pontos específicos, convide para contato direto
+7. Evite respostas genéricas, templificadas ou artificiais
+
+FORMATO: Texto contínuo sem marcadores ou quebras excessivas. Não use aspas.`;
+}
+
+// Construtor de prompt para Q&A
+function buildQAPrompt(businessInfo: BusinessInfo, language: string): string {
+  let qaTopic = "";
+  let qaFormat = "";
+  
+  // Adicionar variantes de idioma e categorias específicas
+  if (language === "pt-BR") {
+    qaTopic = "perguntas frequentes de clientes brasileiros";
+    qaFormat = "Formato: 'Pergunta: [pergunta]\\nResposta: [resposta concisa]'";
+
+    // Adicionar orientações específicas baseadas na categoria
+    if (businessInfo.category.toLowerCase().includes("restaurante")) {
+      qaTopic += " sobre reservas, horário de pico, estacionamento, menu, delivery, eventos privados";
+    } else if (businessInfo.category.toLowerCase().includes("supermercado")) {
+      qaTopic += " sobre horários estendidos, estacionamento, entregas, produtos orgânicos, seções especializadas";
+    } else if (businessInfo.category.toLowerCase().includes("hotel")) {
+      qaTopic += " sobre check-in/check-out, pets, wifi, café da manhã, estacionamento, transporte";
+    }
+  } else if (language === "en-US") {
+    qaTopic = "frequently asked questions from US customers";
+    qaFormat = "Format: 'Question: [question]\\nAnswer: [concise answer]'";
+    
+    if (businessInfo.category.toLowerCase().includes("restaurant")) {
+      qaTopic += " about reservations, busy hours, parking, menu, delivery, private events";
+    } else if (businessInfo.category.toLowerCase().includes("grocery")) {
+      qaTopic += " about extended hours, parking, deliveries, organic products, specialty sections";
+    } else if (businessInfo.category.toLowerCase().includes("hotel")) {
+      qaTopic += " about check-in/check-out, pets, wifi, breakfast, parking, transportation";
+    }
+  } else if (language === "es-ES") {
+    qaTopic = "preguntas frecuentes de clientes hispanos";
+    qaFormat = "Formato: 'Pregunta: [pregunta]\\nRespuesta: [respuesta concisa]'";
+    
+    if (businessInfo.category.toLowerCase().includes("restaurante")) {
+      qaTopic += " sobre reservas, horas pico, estacionamiento, menú, delivery, eventos privados";
+    } else if (businessInfo.category.toLowerCase().includes("supermercado")) {
+      qaTopic += " sobre horarios extendidos, estacionamiento, entregas, productos orgánicos, secciones especializadas";
+    } else if (businessInfo.category.toLowerCase().includes("hotel")) {
+      qaTopic += " sobre check-in/check-out, mascotas, wifi, desayuno, estacionamiento, transporte";
+    }
+  }
+  
+  return `Gere 5 perguntas e respostas otimizadas para a seção Q&A do Google Meu Negócio para:
+
+INFORMAÇÕES DA EMPRESA:
+- Nome: ${businessInfo.name}
+- Categoria: ${businessInfo.category}
+- Endereço: ${businessInfo.address}
+- Site: ${businessInfo.website || "-"}
+- Telefone: ${businessInfo.phone || "-"}
+- Horário: ${businessInfo.hours || "-"}
+
+REQUISITOS:
+1. Crie 5 ${qaTopic}
+2. Perguntas práticas que clientes realmente fazem sobre este tipo de negócio
+3. Respostas concisas (máximo 1-2 frases) e informativas
+4. Inclua informações sobre acessibilidade, horários, serviços especiais, diferencial da empresa
+5. Foque no que é mais relevante para a categoria específica do negócio
+6. Permita à empresa demonstrar conhecimento, confiança e transparência
+
+${qaFormat}
+
+IMPORTANTE: Cada par de pergunta e resposta deve ser separado por uma linha em branco. Respostas devem ter no máximo 150 caracteres.`;
+}
+
+// Construtor de prompt para posts padrão
+function buildPostsPrompt(businessInfo: BusinessInfo, postTypeLabel: string, postType: string, tone: string, language: string): string {
+  let toneDescription = "";
+  
+  if (tone === "friendly") {
+    toneDescription = language === "pt-BR" ? "amigável e próximo" : 
+                     language === "en-US" ? "friendly and approachable" : 
+                     "amigable y cercano";
+  } else if (tone === "promotional") {
+    toneDescription = language === "pt-BR" ? "promocional e urgente" : 
+                     language === "en-US" ? "promotional and urgent" : 
+                     "promocional y urgente";
+  } else {
+    toneDescription = language === "pt-BR" ? "profissional e informativo" : 
+                     language === "en-US" ? "professional and informative" : 
+                     "profesional e informativo";
+  }
+  
+  // Adicionar instruções baseadas no tipo de post
+  let postTypeInstructions = "";
+  if (postType === "update") {
+    postTypeInstructions = language === "pt-BR" ? 
+      "Foque em novidades do negócio, aperfeiçoamentos, ou lembretes sobre produtos/serviços populares." : 
+      language === "en-US" ? 
+      "Focus on business updates, improvements, or reminders about popular products/services." : 
+      "Concéntrese en actualizaciones del negocio, mejoras o recordatorios sobre productos/servicios populares.";
+  } else if (postType === "offer") {
+    postTypeInstructions = language === "pt-BR" ? 
+      "Destaque ofertas específicas com prazo, valor, condições, e forte chamada para ação." : 
+      language === "en-US" ? 
+      "Highlight specific offers with deadline, value, conditions, and strong call to action." : 
+      "Destaque ofertas específicas con plazo, valor, condiciones y una fuerte llamada a la acción.";
+  } else if (postType === "event") {
+    postTypeInstructions = language === "pt-BR" ? 
+      "Detalhe data, hora, local, benefícios de participar, e como confirmar presença." : 
+      language === "en-US" ? 
+      "Detail date, time, location, benefits of attending, and how to confirm attendance." : 
+      "Detalle fecha, hora, lugar, beneficios de participar y cómo confirmar asistencia.";
+  }
+  
+  let languageLabel = language === "pt-BR" ? "Português (Brasil)" : 
+                      language === "en-US" ? "English (US)" : 
+                      "Español";
+  
+  return `
+    You are a professional Google My Business content creator. 
+    Create 3 unique Google My Business posts for a business with these details:
+    - Business Name: ${businessInfo.name}
+    - Category: ${businessInfo.category}
+    - Website: ${businessInfo.website || "N/A"}
+    - Address: ${businessInfo.address}
+    - Phone: ${businessInfo.phone || "N/A"}
+    - Hours: ${businessInfo.hours || "N/A"}
+    
+    Post Type: ${postTypeLabel} (${postType})
+    Tone: ${toneDescription}
+    Language: ${languageLabel} (${language})
+    
+    ${postTypeInstructions}
+
+    Each post must:
+    - Be concise (preferably under 1500 characters)
+    - Use a ${toneDescription} tone (avoid childish style)
+    - Include NO MORE THAN TWO hashtags (and only if they are relevant, not obligatory)
+    - LIMIT the use of emojis (max one per post, only if it adds value)
+    - Avoid repeating the same template or structure in every post
+    - Be suitable for local search optimization
+
+    Instructions:
+    - Format: plain text with appropriate line breaks.
+    - No titles, explanations, or numbering.
+    - Separate each post with three dashes (---).
+    - Do NOT include explanatory text or any output besides the posts themselves.
+  `;
+}
+
+// Função para analisar o conteúdo de Q&A
+function parseQAContent(text: string): string[] {
+  // Tenta dividir em pares de pergunta/resposta (formato esperado: "Pergunta: X\nResposta: Y")
+  const qaRegex = /Pergunta:|Question:|Pregunta:/gi;
+  
+  if (qaRegex.test(text)) {
+    return text
+      .split(/\n\s*\n/)
+      .filter(pair => pair.trim().length > 0 && 
+        (/Pergunta:|Question:|Pregunta:/i.test(pair)));
+  }
+  
+  // Fallback: dividir por linhas em branco
+  return text
+    .split(/\n\s*\n/)
+    .filter(item => item.trim().length > 0)
+    .slice(0, 5); // Limitar a 5 itens
+}
 
 // Fallback function for when API is not available
 export const getMockPosts = (

@@ -6,19 +6,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, FileText } from "lucide-react";
 import { generatePostsWithGemini } from "@/services/geminiService";
 
-const buildPrompt = (businessInfo: any, language: string) => {
-  // Prompt bem otimizado para descrição do GMB
-  return `Crie uma descrição otimizada para o Google Meu Negócio para uma empresa com as seguintes informações:
-Nome: ${businessInfo.name}
-Categoria: ${businessInfo.category}
-Endereço: ${businessInfo.address}
-Site: ${businessInfo.website || "-"}
-Telefone: ${businessInfo.phone || "-"}
-Horário: ${businessInfo.hours || "-"}
-Idioma: ${language}
-A descrição deve seguir as diretrizes do GMB e do Google para SEO local e ranqueamento, ser convincente, clara e ideal para conversão.`;
-};
-
 export default function GMBDescriptionGenerator({ businessInfo, language }: { businessInfo: any, language: string }) {
   const { toast } = useToast();
   const [desc, setDesc] = useState("");
@@ -28,15 +15,15 @@ export default function GMBDescriptionGenerator({ businessInfo, language }: { bu
     setLoading(true);
     try {
       const apiKey = localStorage.getItem("geminiApiKey");
-      const prompt = buildPrompt(businessInfo, language);
 
-      // Reutiliza serviço da Gemini como mock
+      // Reutiliza serviço da Gemini com prompt específico para descrição
       let result = "";
       if (!apiKey) {
         result = "Mercadinho Bela Vista é referência em produtos frescos, bom atendimento e ótimos preços em Maceió. Venha conferir nossas ofertas semanais!";
       } else {
-        const posts = await generatePostsWithGemini("description", businessInfo, "default", language);
-        result = Array.isArray(posts) ? posts[0] : posts;
+        // Usa o tipo "description" diretamente - a função interna agora escolhe o prompt adequado
+        const response = await generatePostsWithGemini("description", businessInfo, "default", language);
+        result = typeof response === "string" ? response : (Array.isArray(response) && response.length > 0 ? response[0] : "");
       }
       setDesc(result);
       toast({ title: "Descrição Gerada!", description: "Você pode editar ou copiar o texto abaixo." });

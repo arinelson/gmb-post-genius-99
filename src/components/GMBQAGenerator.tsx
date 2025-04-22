@@ -15,15 +15,7 @@ export default function GMBQAGenerator({ businessInfo, language }: { businessInf
     setLoading(true);
     try {
       const apiKey = localStorage.getItem("geminiApiKey");
-      const prompt = `Gere uma seção de perguntas e respostas (Q&A) para o Google Meu Negócio de uma empresa com as características:
-Nome: ${businessInfo.name}
-Categoria: ${businessInfo.category}
-Endereço: ${businessInfo.address}
-Site: ${businessInfo.website || "-"}
-Serviços e diferenciais: ${businessInfo.category || "-"}
-Siga boas práticas do GMB e Google, em SEO, conversão e ranqueamento local. O conteúdo deve ser útil e relevante ao público. Retorne uma lista de Q&As com perguntas comuns e suas respectivas respostas.
-Idioma: ${language}
-`;
+      
       let result: string[] = [];
       if (!apiKey) {
         result = [
@@ -31,17 +23,19 @@ Idioma: ${language}
           "Pergunta: Aceitam cartão de crédito?\nResposta: Sim, aceitamos todas as principais bandeiras.",
         ];
       } else {
-        const posts = await generatePostsWithGemini("qa", businessInfo, "default", language);
-        if (Array.isArray(posts)) {
-          result = posts;
-        } else if (typeof posts === "string") {
-          // Se veio string, parse em linhas
-          result = posts.split(/\n\s*\n/);
+        // Usa o tipo "qa" diretamente - a função interna agora escolhe o prompt adequado
+        const response = await generatePostsWithGemini("qa", businessInfo, "default", language);
+        
+        if (Array.isArray(response)) {
+          result = response;
+        } else if (typeof response === "string") {
+          // Se vier como string única, dividir em pares Q&A
+          result = response.split(/\n\s*\n/).filter(qa => qa.trim().length > 0);
         } else {
-          // Fallback case if posts is neither array nor string
           result = ["Não foi possível gerar perguntas e respostas."];
         }
       }
+      
       setQuestions(result);
       toast({ title: "Q&A Gerada!", description: "Veja exemplos gerados abaixo, edite se quiser." });
     } catch (error) {
@@ -64,7 +58,11 @@ Idioma: ${language}
           <Textarea className="w-full" rows={8} value="" placeholder="As perguntas & respostas geradas aparecerão aqui..." readOnly/>
         )}
         {questions.map((item, i) => (
-          <Textarea key={i} className="w-full" value={item} rows={4} onChange={() => {}} />
+          <Textarea key={i} className="w-full" value={item} rows={4} onChange={(e) => {
+            const updatedQuestions = [...questions];
+            updatedQuestions[i] = e.target.value;
+            setQuestions(updatedQuestions);
+          }} />
         ))}
       </div>
     </div>

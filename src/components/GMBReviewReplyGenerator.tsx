@@ -16,7 +16,6 @@ export default function GMBReviewReplyGenerator({ businessInfo, language }: { bu
     setLoading(true);
     try {
       const apiKey = localStorage.getItem("geminiApiKey");
-      let prompt = "";
 
       if (!review) {
         toast({ title: "Digite a avaliação!", description: "Coloque o texto da avaliação/review do cliente." });
@@ -24,16 +23,9 @@ export default function GMBReviewReplyGenerator({ businessInfo, language }: { bu
         return;
       }
 
-      prompt = `Considere o seguinte review recebido no Google Meu Negócio:
-"${review}"
-
-Responda de acordo com as boas práticas do GMB: se for elogio, agradeça com cordialidade; se for crítica, peça desculpas e mostre compromisso de melhoria; caso seja uma pergunta que só o proprietário saberia, apenas oriente a responder pessoalmente.
-
-Empresa: ${businessInfo.name}, Categoria: ${businessInfo.category}, Endereço: ${businessInfo.address}, Idioma: ${language}`;
-
       let result = "";
       if (!apiKey) {
-        // Mock
+        // Mock inteligente
         if (/bom|ótimo|excelente|adorei|gostei/i.test(review)) {
           result = "Agradecemos muito sua avaliação positiva! Esperamos vê-lo novamente em breve.";
         } else if (/ruim|péssimo|horrível|atraso/i.test(review)) {
@@ -42,8 +34,9 @@ Empresa: ${businessInfo.name}, Categoria: ${businessInfo.category}, Endereço: $
           result = "Obrigado pelo seu comentário! Em caso de dúvidas específicas, responderemos diretamente por telefone.";
         }
       } else {
-        const posts = await generatePostsWithGemini("review-reply", businessInfo, "default", language);
-        result = Array.isArray(posts) ? posts[0] : posts;
+        // Usa o tipo "review-reply" e passa o texto da avaliação no customPrompt
+        const response = await generatePostsWithGemini("review-reply", businessInfo, "default", language, review);
+        result = typeof response === "string" ? response : (Array.isArray(response) && response.length > 0 ? response[0] : "");
       }
       setReply(result);
       toast({ title: "Resposta Gerada!", description: "Confira, edite se quiser e copie para o GMB." });
