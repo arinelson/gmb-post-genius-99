@@ -9,8 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Copy, MessageSquare, Tag, Calendar, Info, Clock,
-  MapPin, Globe, Phone, ImageIcon, Loader2, Settings, MessageCircle, Star, Share2, Check, Instagram, Sparkles,
-  FileText, BookOpen, HelpCircle
+  MapPin, Globe, Phone, ImageIcon, Loader2, Settings, MessageCircle, Star, Share2, Check, Instagram, Sparkles
 } from "lucide-react";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -18,9 +17,6 @@ import SettingsModal from "@/components/SettingsModal";
 import { generatePostsWithGemini, getMockPosts } from "@/services/geminiService";
 import CountdownTimer from "@/components/CountdownTimer";
 import { useRateLimiter } from "@/services/rateLimiterService";
-import ReviewResponseGenerator from "@/components/ReviewResponseGenerator";
-import BusinessDescriptionGenerator from "@/components/BusinessDescriptionGenerator";
-import QAGenerator from "@/components/QAGenerator";
 
 const fontFamilyVar = {
   fontFamily: "'Inter', 'Segoe UI', 'Helvetica Neue', Arial, 'sans-serif'",
@@ -253,7 +249,6 @@ const Index = () => {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [visualizacao, setVisualizacao] = useState<"desktop" | "mobile">("desktop");
   const [cooldownTime, setCooldownTime] = useState(0);
-  const [activeFeature, setActiveFeature] = useState("posts");
   const isMobile = useIsMobile();
   const rateLimiter = useRateLimiter();
 
@@ -378,10 +373,10 @@ const Index = () => {
         <div className="flex flex-col items-center justify-center space-y-6 md:space-y-8 text-center">
           <div className="animate-fade-in w-full">
             <h1 className="text-2xl md:text-4xl font-bold tracking-tight bg-gradient-to-r from-blue-600 to-blue-400 dark:from-blue-400 dark:to-blue-200 bg-clip-text text-transparent animate-pulse">
-              GMB Content Generator
+              GMB Post Generator
             </h1>
             <p className="text-sm md:text-lg text-blue-700 dark:text-blue-300 mt-2 animate-fade-in delay-200 px-2 font-light tracking-wide">
-              Gere conteúdo personalizado para o Google Meu Negócio em segundos
+              Gere posts personalizados para o Google Meu Negócio em segundos
             </p>
           </div>
 
@@ -389,129 +384,33 @@ const Index = () => {
             <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-700 dark:to-blue-900 text-white rounded-t-lg p-4 md:p-6">
               <CardTitle className="text-xl md:text-2xl flex items-center justify-center gap-2 animate-float">
                 <Sparkles size={isMobile ? 20 : 24} className="animate-pulse text-yellow-200" />
-                Informações do Negócio
+                Configurações do Post
                 <Sparkles size={isMobile ? 20 : 24} className="animate-pulse text-yellow-200" />
               </CardTitle>
               <CardDescription className="text-blue-100 text-sm md:text-base">
-                Preencha as informações abaixo para gerar conteúdo personalizado
+                Preencha as informações abaixo para gerar posts personalizados
               </CardDescription>
               <div className="mt-2 text-xs font-medium text-blue-100">
                 <span className="bg-blue-800/50 px-2 py-1 rounded-full inline-flex items-center gap-1 shadow-inner">
-                  <Clock size={12} /> Restantes hoje: <span className="font-bold">{dailyPostsRemaining}</span> gerações
+                  <Clock size={12} /> Restantes hoje: <span className="font-bold">{dailyPostsRemaining}</span> posts
                 </span>
               </div>
             </CardHeader>
             <CardContent className="p-4 md:p-6 dark:bg-slate-900/80">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-white/40 dark:bg-slate-800/40 p-4 rounded-lg mb-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-blue-700 dark:text-blue-300 font-medium flex items-center gap-1 text-sm">
-                    <Info size={14} className="animate-pulse" /> Nome da Empresa
-                  </Label>
-                  <Input
-                    id="name"
-                    name="name"
-                    placeholder="Ex: Mercadinho Bela Vista"
-                    value={businessInfo.name}
-                    onChange={handleInputChange}
-                    className="border-blue-200 dark:border-blue-800 focus:ring-blue-500 text-sm md:h-12"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="category" className="text-blue-700 dark:text-blue-300 font-medium flex items-center gap-1 text-sm">
-                    <Tag size={14} className="animate-pulse" /> Categoria do Negócio
-                  </Label>
-                  <Input
-                    id="category"
-                    name="category"
-                    placeholder="Ex: Supermercado, Restaurante, etc."
-                    value={businessInfo.category}
-                    onChange={handleInputChange}
-                    className="border-blue-200 dark:border-blue-800 focus:ring-blue-500 text-sm md:h-12"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="website" className="text-blue-700 dark:text-blue-300 font-medium flex items-center gap-1 text-sm">
-                    <Globe size={14} className="animate-pulse" /> Website (opcional)
-                  </Label>
-                  <Input
-                    id="website"
-                    name="website"
-                    placeholder="Ex: www.mercadinhobelavista.com"
-                    value={businessInfo.website}
-                    onChange={handleInputChange}
-                    className="border-blue-200 dark:border-blue-800 focus:ring-blue-500 text-sm md:h-12"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-blue-700 dark:text-blue-300 font-medium flex items-center gap-1 text-sm">
-                    <Phone size={14} className="animate-pulse" /> Telefone (opcional)
-                  </Label>
-                  <Input
-                    id="phone"
-                    name="phone"
-                    placeholder="Ex: (82) 99999-9999"
-                    value={businessInfo.phone}
-                    onChange={handleInputChange}
-                    className="border-blue-200 dark:border-blue-800 focus:ring-blue-500 text-sm md:h-12"
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="address" className="text-blue-700 dark:text-blue-300 font-medium flex items-center gap-1 text-sm">
-                    <MapPin size={14} className="animate-pulse" /> Endereço Completo
-                  </Label>
-                  <Input
-                    id="address"
-                    name="address"
-                    placeholder="Ex: Av. Eng. Corintho Campelo da Paz, N° 29 - Santos Dumont, Maceió"
-                    value={businessInfo.address}
-                    onChange={handleInputChange}
-                    className="border-blue-200 dark:border-blue-800 focus:ring-blue-500 text-sm md:h-12"
-                  />
-                </div>
-                <div className="space-y-2 md:col-span-2">
-                  <Label htmlFor="hours" className="text-blue-700 dark:text-blue-300 font-medium flex items-center gap-1 text-sm">
-                    <Clock size={14} className="animate-pulse" /> Horário de Funcionamento
-                  </Label>
-                  <Input
-                    id="hours"
-                    name="hours"
-                    placeholder="Ex: Segunda a Sábado: 8h às 22h | Domingo: Fechado"
-                    value={businessInfo.hours}
-                    onChange={handleInputChange}
-                    className="border-blue-200 dark:border-blue-800 focus:ring-blue-500 text-sm md:h-12"
-                  />
-                </div>
-              </div>
-
-              <Tabs defaultValue="posts" value={activeFeature} onValueChange={setActiveFeature} className="w-full">
-                <TabsList className="grid grid-cols-4 gap-2 mb-6 md:mb-8 w-full overflow-x-auto">
-                  <TabsTrigger 
-                    value="posts" 
-                    className="flex items-center justify-center gap-1 text-xs md:text-sm py-2 md:py-3 px-1 md:px-3 transition-all duration-300 data-[state=active]:shadow-md data-[state=active]:bg-blue-600 data-[state=active]:text-white"
-                  >
-                    <MessageSquare size={isMobile ? 14 : 18} /> <span className={isMobile ? "ml-1" : "ml-2"}>Posts</span>
+              <Tabs defaultValue="post-type" className="w-full">
+                <TabsList className="grid grid-cols-3 gap-2 mb-6 md:mb-8 w-full overflow-x-auto md:overflow-visible">
+                  <TabsTrigger value="post-type" className="flex items-center justify-center gap-1 text-xs md:text-sm py-2 md:py-3 px-1 md:px-3 transition-all duration-300 data-[state=active]:shadow-md">
+                    <MessageSquare size={isMobile ? 14 : 18} /> <span className={isMobile ? "ml-1" : "ml-2"}>Tipo de Post</span>
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="reviews" 
-                    className="flex items-center justify-center gap-1 text-xs md:text-sm py-2 md:py-3 px-1 md:px-3 transition-all duration-300 data-[state=active]:shadow-md data-[state=active]:bg-green-600 data-[state=active]:text-white"
-                  >
-                    <MessageCircle size={isMobile ? 14 : 18} /> <span className={isMobile ? "ml-1" : "ml-2"}>Avaliações</span>
+                  <TabsTrigger value="business-info" className="flex items-center justify-center gap-1 text-xs md:text-sm py-2 md:py-3 px-1 md:px-3 transition-all duration-300 data-[state=active]:shadow-md">
+                    <Info size={isMobile ? 14 : 18} /> <span className={isMobile ? "ml-1" : "ml-2"}>Informações</span>
                   </TabsTrigger>
-                  <TabsTrigger 
-                    value="description" 
-                    className="flex items-center justify-center gap-1 text-xs md:text-sm py-2 md:py-3 px-1 md:px-3 transition-all duration-300 data-[state=active]:shadow-md data-[state=active]:bg-purple-600 data-[state=active]:text-white"
-                  >
-                    <FileText size={isMobile ? 14 : 18} /> <span className={isMobile ? "ml-1" : "ml-2"}>Descrição</span>
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="qa" 
-                    className="flex items-center justify-center gap-1 text-xs md:text-sm py-2 md:py-3 px-1 md:px-3 transition-all duration-300 data-[state=active]:shadow-md data-[state=active]:bg-amber-600 data-[state=active]:text-white"
-                  >
-                    <HelpCircle size={isMobile ? 14 : 18} /> <span className={isMobile ? "ml-1" : "ml-2"}>Q&A</span>
+                  <TabsTrigger value="tone-format" className="flex items-center justify-center gap-1 text-xs md:text-sm py-2 md:py-3 px-1 md:px-3 transition-all duration-300 data-[state=active]:shadow-md">
+                    <Sparkles size={isMobile ? 14 : 18} /> <span className={isMobile ? "ml-1" : "ml-2"}>Tom e Formato</span>
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="posts">
+                <TabsContent value="post-type" className="space-y-4 animate-fade-in">
                   <div className="space-y-2 p-2 md:p-4 bg-white/40 dark:bg-slate-800/40 rounded-lg">
                     <Label htmlFor="post-type" className="text-blue-700 dark:text-blue-300 font-medium text-sm md:text-base flex items-center gap-2">
                       <Tag size={16} className="animate-pulse" /> 
@@ -543,23 +442,169 @@ const Index = () => {
                     </p>
                   </div>
                 </TabsContent>
-                
-                <TabsContent value="reviews">
-                  <ReviewResponseGenerator businessInfo={businessInfo} />
+
+                <TabsContent value="business-info" className="space-y-4 animate-fade-in">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 bg-white/40 dark:bg-slate-800/40 p-4 rounded-lg">
+                    <div className="space-y-2">
+                      <Label htmlFor="name" className="text-blue-700 dark:text-blue-300 font-medium flex items-center gap-1 text-sm">
+                        <Info size={14} className="animate-pulse" /> Nome da Empresa
+                      </Label>
+                      <Input
+                        id="name"
+                        name="name"
+                        placeholder="Ex: Mercadinho Bela Vista"
+                        value={businessInfo.name}
+                        onChange={handleInputChange}
+                        className="border-blue-200 dark:border-blue-800 focus:ring-blue-500 text-sm md:h-12"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="category" className="text-blue-700 dark:text-blue-300 font-medium flex items-center gap-1 text-sm">
+                        <Tag size={14} className="animate-pulse" /> Categoria do Negócio
+                      </Label>
+                      <Input
+                        id="category"
+                        name="category"
+                        placeholder="Ex: Supermercado, Restaurante, etc."
+                        value={businessInfo.category}
+                        onChange={handleInputChange}
+                        className="border-blue-200 dark:border-blue-800 focus:ring-blue-500 text-sm md:h-12"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="website" className="text-blue-700 dark:text-blue-300 font-medium flex items-center gap-1 text-sm">
+                        <Globe size={14} className="animate-pulse" /> Website (opcional)
+                      </Label>
+                      <Input
+                        id="website"
+                        name="website"
+                        placeholder="Ex: www.mercadinhobelavista.com"
+                        value={businessInfo.website}
+                        onChange={handleInputChange}
+                        className="border-blue-200 dark:border-blue-800 focus:ring-blue-500 text-sm md:h-12"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone" className="text-blue-700 dark:text-blue-300 font-medium flex items-center gap-1 text-sm">
+                        <Phone size={14} className="animate-pulse" /> Telefone (opcional)
+                      </Label>
+                      <Input
+                        id="phone"
+                        name="phone"
+                        placeholder="Ex: (82) 99999-9999"
+                        value={businessInfo.phone}
+                        onChange={handleInputChange}
+                        className="border-blue-200 dark:border-blue-800 focus:ring-blue-500 text-sm md:h-12"
+                      />
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="address" className="text-blue-700 dark:text-blue-300 font-medium flex items-center gap-1 text-sm">
+                        <MapPin size={14} className="animate-pulse" /> Endereço Completo
+                      </Label>
+                      <Input
+                        id="address"
+                        name="address"
+                        placeholder="Ex: Av. Eng. Corintho Campelo da Paz, N° 29 - Santos Dumont, Maceió"
+                        value={businessInfo.address}
+                        onChange={handleInputChange}
+                        className="border-blue-200 dark:border-blue-800 focus:ring-blue-500 text-sm md:h-12"
+                      />
+                    </div>
+                    <div className="space-y-2 md:col-span-2">
+                      <Label htmlFor="hours" className="text-blue-700 dark:text-blue-300 font-medium flex items-center gap-1 text-sm">
+                        <Clock size={14} className="animate-pulse" /> Horário de Funcionamento
+                      </Label>
+                      <Input
+                        id="hours"
+                        name="hours"
+                        placeholder="Ex: Segunda a Sábado: 8h às 22h | Domingo: Fechado"
+                        value={businessInfo.hours}
+                        onChange={handleInputChange}
+                        className="border-blue-200 dark:border-blue-800 focus:ring-blue-500 text-sm md:h-12"
+                      />
+                    </div>
+                  </div>
                 </TabsContent>
-                
-                <TabsContent value="description">
-                  <BusinessDescriptionGenerator businessInfo={businessInfo} />
-                </TabsContent>
-                
-                <TabsContent value="qa">
-                  <QAGenerator businessInfo={businessInfo} />
+
+                <TabsContent value="tone-format" className="space-y-4 animate-fade-in">
+                  <div className="space-y-5 bg-white/40 dark:bg-slate-800/40 p-4 rounded-lg">
+                    <div className="space-y-2">
+                      <Label htmlFor="tone" className="text-blue-700 dark:text-blue-300 font-medium text-sm md:text-base flex items-center gap-2">
+                        <Sparkles size={16} className="animate-pulse" /> Tom do Post
+                      </Label>
+                      <Select 
+                        value={tone} 
+                        onValueChange={(value) => handleSelectChange("tone", value)}
+                      >
+                        <SelectTrigger className="border-blue-200 dark:border-blue-800 focus:ring-blue-500 md:h-12">
+                          <SelectValue placeholder="Selecione o tom" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="friendly">Amigável/Friendly</SelectItem>
+                          <SelectItem value="brief">Curto/Breve</SelectItem>
+                          <SelectItem value="promotional">Promocional</SelectItem>
+                          <SelectItem value="funny">Engraçado/Humorístico</SelectItem>
+                          <SelectItem value="detailed">Detalhado/Descritivo</SelectItem>
+                          <SelectItem value="emoji">Com Ênfase em Emojis</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="language" className="text-blue-700 dark:text-blue-300 font-medium text-sm md:text-base flex items-center gap-2">
+                        <Globe size={16} className="animate-pulse" /> Idioma
+                      </Label>
+                      <Select 
+                        value={language} 
+                        onValueChange={(value) => handleSelectChange("language", value)}
+                      >
+                        <SelectTrigger className="border-blue-200 dark:border-blue-800 focus:ring-blue-500 md:h-12">
+                          <SelectValue placeholder="Selecione o idioma" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="pt-BR">Português (Brasil)</SelectItem>
+                          <SelectItem value="en-US">Inglês (EUA)</SelectItem>
+                          <SelectItem value="es-ES">Espanhol</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </TabsContent>
               </Tabs>
+
+              <div className="mt-6 md:mt-8">
+                <Button 
+                  onClick={handleGeneratePosts} 
+                  disabled={loading || !businessInfo.name || !businessInfo.category || !businessInfo.address || cooldownTime > 0}
+                  className="w-full bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-700 hover:to-blue-600 dark:from-blue-500 dark:to-indigo-600 dark:hover:from-blue-400 dark:hover:to-indigo-500 transition-all duration-300 text-white font-medium py-6 rounded-lg shadow-lg hover:shadow-xl dark:shadow-blue-500/20 relative overflow-hidden group transform hover:translate-y-[-2px]"
+                >
+                  <div className="absolute inset-0 w-full h-full bg-gradient-to-r from-transparent via-white/10 to-transparent -translate-x-full group-hover:animate-shimmer" />
+                  
+                  {loading ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <Loader2 className="h-5 w-5 animate-spin" />
+                      <span>Gerando Posts...</span>
+                    </div>
+                  ) : cooldownTime > 0 ? (
+                    <div className="flex items-center justify-center space-x-2">
+                      <CountdownTimer 
+                        milliseconds={cooldownTime} 
+                        onComplete={() => setCooldownTime(0)}
+                        className="text-white"
+                      />
+                      <span>até poder gerar novamente</span>
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-center space-x-2">
+                      <Sparkles className="h-5 w-5 animate-pulse" />
+                      <span>Gerar Post</span>
+                    </div>
+                  )}
+                </Button>
+              </div>
             </CardContent>
           </Card>
 
-          {activeFeature === "posts" && generatedPosts.length > 0 && (
+          {generatedPosts.length > 0 && (
             <Card className="w-full max-w-4xl animate-fade-in delay-400 shadow-lg border-blue-200 dark:border-blue-800 dark:bg-slate-900/80">
               <CardHeader className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-700 dark:to-blue-900 text-white rounded-t-lg p-4 md:p-6">
                 <CardTitle className="text-xl md:text-2xl flex items-center justify-center gap-2 animate-float">
@@ -661,7 +706,7 @@ const Index = () => {
           </Card>
           
           <div className="text-xs text-blue-500 dark:text-blue-400 mt-4 opacity-75">
-            &copy; 2025 GMB Content Generator | Todos os direitos reservados
+            &copy; 2025 GMB Post Generator | Todos os direitos reservados
           </div>
         </div>
       </div>
