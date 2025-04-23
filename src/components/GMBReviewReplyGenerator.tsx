@@ -19,7 +19,7 @@ export default function GMBReviewReplyGenerator({ businessInfo, language }: { bu
 
       if (!review) {
         toast({ title: "Digite a avaliação!", description: "Coloque o texto da avaliação/review do cliente." });
-        setLoading(false);
+        setLoading(true);
         return;
       }
 
