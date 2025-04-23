@@ -288,24 +288,27 @@ Reseña del cliente: "${reviewText}"
 Agora, crie uma resposta profissional e personalizada para a avaliação com base na sua classificação:
 
 Se POSITIVA:
-- Agradeça sinceramente pelo feedback positivo
-- Mencione algo específico do comentário
-- Convide o cliente a retornar
+- Agradeça sinceramente pelo feedback positivo.
+- Mencione algo específico do comentário, mas não em todo momento.
+- Varie na forma de agradecer pelo feedback positivo.
+- Convide o cliente a retornar.
 - Assinatura com nome da empresa
 
 Se NEGATIVA:
-- Demonstre empatia e compreensão (sem pedir desculpas excessivamente)
-- Não admita culpa diretamente, mas mostre preocupação
-- Ofereça contato direto (sem expor informações privadas)
-- Convide para resolver a situação offline
-- Termine com tom positivo
-- Assinatura profissional
+- Demonstre empatia e compreensão (sem pedir desculpas excessivamente).
+- Varie na forma de demonstrar empatia e compreensão.
+- Não admita culpa diretamente, mas mostre preocupação.
+- Ofereça contato direto (sem expor informações privadas).
+- Convide para resolver a situação offline.
+- Termine com tom positivo.
+- Assinatura profissional.
 
 Se NEUTRA:
-- Agradeça pelo feedback
-- Destaque pontos positivos do seu negócio
-- Convide para uma nova visita
-- Assinatura cordial
+- Agradeça pelo feedback.
+- Destaque pontos positivos do seu negócio.
+- Responda da forma que quem comentou entenda que você entendeu de forma simples.
+- Convide para uma nova visita.
+- Assinatura cordial.
 
 Se PERGUNTA:
 - Responda diretamente à dúvida de forma informativa
@@ -572,7 +575,7 @@ INFORMAÇÕES DA EMPRESA:
 - Horário: ${businessInfo.hours || "-"}
 
 INSTRUÇÕES:
-1. Crie 5 perguntas frequentes que potenciais clientes realmente fariam sobre este tipo de negócio
+1. Crie 8 perguntas frequentes que potenciais clientes realmente fariam sobre este tipo de negócio
 2. Foque no que é mais relevante para a categoria "${businessInfo.category}"
 3. As perguntas devem ser diretas e simples, como os clientes realmente perguntariam
 4. As respostas devem ser informativas, concisas (máximo 2 frases) e específicas
