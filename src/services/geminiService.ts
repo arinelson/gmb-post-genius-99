@@ -564,7 +564,7 @@ function buildQAPrompt(businessInfo: BusinessInfo, language: string): string {
   
   // Prompt base para geração de Q&A
   const basePrompt = language === "pt-BR" 
-    ? `Crie 5 pares de perguntas e respostas otimizadas para a seção Q&A do Google Meu Negócio para:
+    ? `Crie 10 pares de perguntas e respostas otimizadas para a seção Q&A do Google Meu Negócio para:
 
 INFORMAÇÕES DA EMPRESA:
 - Nome: ${businessInfo.name}
@@ -575,7 +575,7 @@ INFORMAÇÕES DA EMPRESA:
 - Horário: ${businessInfo.hours || "-"}
 
 INSTRUÇÕES:
-1. Crie 8 perguntas frequentes que potenciais clientes realmente fariam sobre este tipo de negócio
+1. Crie 10 perguntas frequentes que potenciais clientes realmente fariam sobre este tipo de negócio
 2. Foque no que é mais relevante para a categoria "${businessInfo.category}"
 3. As perguntas devem ser diretas e simples, como os clientes realmente perguntariam
 4. As respostas devem ser informativas, concisas (máximo 2 frases) e específicas
