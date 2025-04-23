@@ -196,7 +196,7 @@ REQUISITOS DE SEO:${seoGuidance}
 ${categorySpecific ? `\nESPECÍFICO PARA ESTE TIPO DE NEGÓCIO:\n${categorySpecific}` : ""}
 
 IMPORTANTE:
-- Limite exato de 750 caracteres
+- Limite exato de 600 caracteres
 - Texto conciso e persuasivo
 - Sem quebras de linha ou marcadores
 - Ênfase no valor único do negócio
